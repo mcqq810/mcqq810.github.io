@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海豹®无限公司 - 让世界万物海豹化</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial Rounded MT Bold', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background-color: #f0f8ff;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, #1e90ff, #87cefa);
+            padding: 20px 0;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logo-text {
+            font-size: 32px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #1e90ff;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        nav ul {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: background-color 0.3s;
+        }
+        nav a:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        /* 主体内容样式 */
+        main {
+            padding: 40px 0;
+        }
+        .section {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .section-title {
+            color: #1e90ff;
+            font-size: 26px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #87cefa;
+            display: inline-block;
+        }
+
+        /* 公司简介样式 */
+        .intro-text {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .mission {
+            background-color: #e6f3ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border-left: 5px solid #1e90ff;
+        }
+
+        /* 职员名单样式 */
+        .staff-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .staff-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.3s;
+        }
+        .staff-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .staff-position {
+            font-weight: bold;
+            color: #1e90ff;
+            margin-bottom: 5px;
+        }
+
+        /* 画豹法则样式 */
+        .rule-list {
+            list-style-position: inside;
+            margin-top: 20px;
+        }
+        .rule-list li {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        /* 画海豹功能样式 */
+        .draw-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        .canvas-container {
+            flex: 1;
+            min-width: 400px;
+        }
+        #sealCanvas {
+            border: 3px solid #1e90ff;
+            border-radius: 15px;
+            background-color: white;
+            cursor: crosshair;
+        }
+        .tools-container {
+            flex: 0 0 250px;
+            background-color: #e6f3ff;
+            padding: 20px;
+            border-radius: 15px;
+        }
+        .tool-title {
+            color: #1e90ff;
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .color-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .color-btn:hover, .color-btn.active {
+            transform: scale(1.2);
+            border-color: #ffd700;
+        }
+        .color-black { background-color: black; }
+        .color-blue { background-color: #1e90ff; }
+        .color-red { background-color: #ff4500; }
+        .color-green { background-color: #32cd32; }
+
+        .tool-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .tool-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background-color: #1e90ff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .tool-btn:hover {
+            background-color: #0066cc;
+        }
+        .tool-btn.reset {
+            background-color: #ff6347;
+        }
+        .tool-btn.reset:hover {
+            background-color: #dc143c;
+        }
+        .tool-btn.upload {
+            background-color: #32cd32;
+        }
+        .tool-btn.upload:hover {
+            background-color: #228b22;
+        }
+        .brush-size {
+            margin-bottom: 20px;
+        }
+        .brush-size label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        #brushSize {
+            width: 100%;
+            accent-color: #1e90ff;
+        }
+
+        /* 作品命名区域 */
+        .seal-name {
+            margin-bottom: 20px;
+        }
+        .seal-name label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        #sealName {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #1e90ff;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* 作品画廊 */
+        .gallery {
+            margin-top: 40px;
+        }
+        .gallery-title {
+            color: #1e90ff;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .gallery-item {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+        .gallery-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-bottom: 2px solid #e6f3ff;
+        }
+        .gallery-caption {
+            padding: 10px;
+            text-align: center;
+            background-color: white;
+        }
+        .gallery-name {
+            font-weight: bold;
+            color: #1e90ff;
+        }
+
+        /* 公司说明样式 */
+        .company-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #1e90ff;
+        }
+
+        /* 底部样式 */
+        footer {
+            background-color: #1e90ff;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            border-radius: 20px 20px 0 0;
+            margin-top: 30px;
+        }
+        .copyright {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        .modal-title {
+            color: #1e90ff;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .modal-btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 10px;
+            background-color: #1e90ff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <div class="logo-icon">SEAL</div>
+                <div class="logo-text">海豹®无限公司</div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#intro">公司简介</a></li>
+                    <li><a href="#staff">职员名单</a></li>
+                    <li><a href="#rules">画豹法则</a></li>
+                    <li><a href="#draw">画海豹</a></li>
+                    <li><a href="#info">公司说明</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主体内容 -->
+    <main class="container">
+        <!-- 公司简介 -->
+        <section id="intro" class="section">
+            <h2 class="section-title">公司简介</h2>
+            <p class="intro-text">在这个充满无限可能的时代，海豹®无限公司横空出世，立志将世界万物“海豹化”！我们是一家拥有宏伟愿景的创新企业，注册于2024年10月8日，注册资本高达1元，经营范围涵盖“世界上所有东西的海豹化”——没错，只要你能想到的，我们都能让它变成一只可爱的海豹！</p>
+            <p class="intro-text">为什么选择海豹®无限公司？因为我们拥有最专业、最热情的海豹化团队！从老板张海豹的英明领导，到副老板林海豹的严格监督，再到秘书杨海豹的精准统计，每一位成员都在为“海豹征服世界”的伟大事业奋斗。我们的工程部由庄海豹率领，致力于打造独一无二的海豹卡片；金牌设计师林海豹则负责让每一只海豹都精致到令人惊叹！而安保部的金海豹、杨海豹和黄海豹，时刻警惕着任何“不够海豹”的异常现象，确保海豹的纯粹性！</p>
+            
+            <div class="mission">
+                <h3 style="color: #1e90ff; margin-bottom: 10px;">我们的使命：让海豹无处不在！</h3>
+                <p>无论是日常用品、自然景观，还是抽象概念，海豹®无限公司都能为它们注入海豹的灵魂。想象一下：海豹化的杯子、海豹化的云朵、甚至海豹化的时间——生活将因海豹而更加快乐！我们的员工每天都在用画笔创造奇迹，而你，也可以成为这场海豹革命的一部分！</p>
+                <p style="margin-top: 10px; font-weight: bold;">加入我们，或者享受我们的海豹化服务，一起见证这个世界被海豹温柔占领的时刻！海豹®无限公司——因为世界本该更圆润、更可爱、更海豹！</p>
+            </div>
+        </section>
+
+        <!-- 职员名单 -->
+        <section id="staff" class="section">
+            <h2 class="section-title">职员名单</h2>
+            <div class="staff-list">
+                <div class="staff-item">
+                    <div class="staff-position">老板</div>
+                    <div class="staff-name">张海豹_11</div>
+                </div>
+                <div class="staff-item">
+                    <div class="staff-position">副老板</div>
+                    <div class="staff-name">林海豹_47</div>
+                </div>
+                <div class="staff-item">
+                    <div class="staff-position">秘书</div>
+                    <div class="staff-name">杨海豹_24</div>
+                </div>
+                <div class="staff-item">
+                    <div class="staff-position">财务部</div>
+                    <div class="staff-name">杨海豹_36, 黄海豹_33</div>
+                </div>
+                <div class="staff-item">
+                    <div class="staff-position">工程部</div>
+                    <div class="staff-name">庄海豹_01</div>
+                </div>
+                <div class="staff-item">
+                    <div class="staff-position">安保部</div>
+                    <div class="staff-name">金海豹_09, 黄海豹_35, 杨海豹_48</div>
+                </div>
+                <div class="staff-item">
+                    <div class="staff-position">员工部</div>
+                    <div class="staff-name">刘海豹_03, 黄海豹_21, 胡海豹_25, 王海豹_31, 王海豹_41</div>
+                </div>
+                <div class="staff-item">
+                    <div class="staff-position">金牌设计师</div>
+                    <div class="staff-name">林海豹_06</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 画豹法则 -->
+        <section id="rules" class="section">
+            <h2 class="section-title">画豹法则</h2>
+            <ol class="rule-list">
+                <li>不可太凶猛</li>
+                <li>四肢可以变形</li>
+                <li>海豹必须为主体</li>
+                <li>眼睛必须为圆形</li>
+                <li>掌部最少有2条线</li>
+                <li>必须有掌、眼、嘴部</li>
+                <li>嘴长则舌短，舌长则嘴短</li>
+                <li>只可用黑、蓝、红、绿笔画，可荧光笔着色</li>
+            </ol>
+        </section>
+
+        <!-- 画海豹功能 -->
+        <section id="draw" class="section">
+            <h2 class="section-title">画一只属于你的海豹</h2>
+            <div class="draw-section">
+                <div class="canvas-container">
+                    <canvas id="sealCanvas" width="800" height="600"></canvas>
+                </div>
+                <div class="tools-container">
+                    <h3 class="tool-title">绘画工具</h3>
+                    
+                    <!-- 颜色选择 -->
+                    <div>
+                        <h4 style="margin-bottom: 10px; color: #333;">选择颜色</h4>
+                        <div class="color-options">
+                            <div class="color-btn color-black active" data-color="black"></div>
+                            <div class="color-btn color-blue" data-color="#1e90ff"></div>
+                            <div class="color-btn color-red" data-color="#ff4500"></div>
+                            <div class="color-btn color-green" data-color="#32cd32"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 画笔大小 -->
+                    <div class="brush-size">
+                        <label for="brushSize">画笔大小: <span id="sizeValue">5</span></label>
+                        <input type="range" id="brushSize" min="1" max="20" value="5">
+                    </div>
+                    
+                    <!-- 海豹命名 -->
+                    <div class="seal-name">
+                        <label for="sealName">给你的海豹起个名字:</label>
+                        <input type="text" id="sealName" placeholder="例如：小蓝豹">
+                    </div>
+                    
+                    <!-- 工具按钮 -->
+                    <div class="tool-buttons">
+                        <button class="tool-btn reset" id="clearCanvas">清除画布</button>
+                        <button class="tool-btn upload" id="uploadCanvas">上传作品</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 作品画廊 -->
+            <div class="gallery">
+                <h3 class="gallery-title">大家的海豹作品</h3>
+                <div class="gallery-grid" id="sealGallery">
+                    <!-- 作品会在这里动态显示 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 公司说明 -->
+        <section id="info" class="section">
+            <h2 class="section-title">公司说明</h2>
+            <div class="company-info">
+                <div class="info-item">
+                    <span class="info-label">名称</span>
+                    <span>海豹®无限公司</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">注册时间</span>
+                    <span>2024年10月8日</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">注册资本</span>
+                    <span>1元</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">经营范围</span>
+                    <span>所有东西的海豹化</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">本照有效期</span>
+                    <span>2024年10月8日至永久</span>
+                </div>
+            </div>
+            <p style="margin-top: 20px; font-style: italic;">本公司最终解释权归老板所有，海豹®保留随时躺平的权利。</p>
+        </section>
+    </main>
+
+    <!-- 上传成功弹窗 -->
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <h3 class="modal-title">上传成功！</h3>
+            <p>你的海豹作品已成功上传到画廊，所有人都可以看到啦！</p>
+            <button class="modal-btn" id="closeModal">确定</button>
+        </div>
+    </div>
+
+    <!-- 底部 -->
+    <footer>
+        <div class="container">
+            <p>© 2024 海豹®无限公司 - 让世界万物海豹化</p>
+            <p class="copyright">遵循画豹法则，共创海豹世界</p>
+        </div>
+    </footer>
+
+    <script>
+        // 获取画布和上下文
+        const canvas = document.getElementById('sealCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 绘画状态变量
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentColor = 'black';
+        let currentSize = 5;
+        
+        // 初始化画布
+        function initCanvas() {
+            // 设置默认绘图样式
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = currentSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // 加载保存的作品
+            loadSealArtworks();
+        }
+        
+        // 开始绘画
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = getCanvasCoordinates(e);
+        }
+        
+        // 绘画中
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const [x, y] = getCanvasCoordinates(e);
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            
+            [lastX, lastY] = [x, y];
+        }
+        
+        // 结束绘画
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        // 获取画布坐标
+        function getCanvasCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            return [
+                e.clientX - rect.left,
+                e.clientY - rect.top
+            ];
+        }
+        
+        // 选择颜色
+        function selectColor(e) {
+            // 移除所有活跃状态
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 添加当前活跃状态
+            e.target.classList.add('active');
+            
+            // 设置当前颜色
+            currentColor = e.target.dataset.color;
+            ctx.strokeStyle = currentColor;
+        }
+        
+        // 改变画笔大小
+        function changeBrushSize(e) {
+            currentSize = e.target.value;
+            ctx.lineWidth = currentSize;
+            document.getElementById('sizeValue').textContent = currentSize;
+        }
+        
+        // 清除画布
+        function clearCanvas() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // 上传作品
+        function uploadCanvas() {
+            const sealName = document.getElementById('sealName').value || '无名海豹';
+            
+            // 获取画布数据URL
+            const dataURL = canvas.toDataURL('image/png');
+            
+            // 创建作品对象
+            const artwork = {
+                id: Date.now(),
+                name: sealName,
+                image: dataURL,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            // 保存到本地存储
+            saveArtwork(artwork);
+            
+            // 添加到画廊
+            addToGallery(artwork);
+            
+            // 显示成功弹窗
+            document.getElementById('uploadModal').style.display = 'flex';
+        }
+        
+        // 保存作品到本地存储
+        function saveArtwork(artwork) {
+            let artworks = JSON.parse(localStorage.getItem('sealArtworks') || '[]');
+            artworks.push(artwork);
+            localStorage.setItem('sealArtworks', JSON.stringify(artworks));
+        }
+        
+        // 从本地存储加载作品
+        function loadSealArtworks() {
+            const artworks = JSON.parse(localStorage.getItem('sealArtworks') || '[]');
+            artworks.forEach(artwork => {
+                addToGallery(artwork);
+            });
+        }
+        
+        // 添加作品到画廊
+        function addToGallery(artwork) {
+            const gallery = document.getElementById('sealGallery');
+            
+            const galleryItem = document.createElement('div');
+            galleryItem.className = 'gallery-item';
+            
+            galleryItem.innerHTML = `
+                <img src="${artwork.image}" alt="${artwork.name}" class="gallery-img">
+                <div class="gallery-caption">
+                    <div class="gallery-name">${artwork.name}</div>
+                    <div class="gallery-date">${artwork.timestamp}</div>
+                </div>
+            `;
+            
+            gallery.prepend(galleryItem); // 添加到最前面
+        }
+        
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+        }
+        
+        // 事件监听
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        
+        // 触摸屏支持
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startDrawing(e.touches[0]);
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            draw(e.touches[0]);
+        });
+        
+        canvas.addEventListener('touchend', stopDrawing);
+        
+        // 颜色选择器事件
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', selectColor);
+        });
+        
+        // 画笔大小事件
+        document.getElementById('brushSize').addEventListener('input', changeBrushSize);
+        
+        // 清除画布事件
+        document.getElementById('clearCanvas').addEventListener('click', clearCanvas);
+        
+        // 上传作品事件
+        document.getElementById('uploadCanvas').addEventListener('click', uploadCanvas);
+        
+        // 关闭弹窗事件
+        document.getElementById('closeModal').addEventListener('click', closeModal);
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            initCanvas();
+            clearCanvas(); // 初始化为空白画布
+        });
+    </script>
+</body>
+</html>
