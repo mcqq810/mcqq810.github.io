@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -663,6 +663,36 @@
         .sync-instruction li {
             margin: 8px 0;
         }
+        
+        /* 分享链接弹窗样式 */
+        .share-link-textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            font-family: monospace;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            resize: none;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        
+        .share-instruction {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .data-info {
+            background-color: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -688,11 +718,8 @@
         <div class="sync-container" id="syncContainer" style="display: none;">
             <div class="sync-title">🔗 跨设备同步</div>
             <div class="sync-controls">
-                <button class="btn-sync" onclick="uploadToCloud()">
-                    <span style="font-size: 16px;">📤</span> 上传
-                </button>
-                <button class="btn-sync" onclick="downloadFromCloud()">
-                    <span style="font-size: 16px;">📥</span> 下载
+                <button class="btn-sync" onclick="generateShareLink()">
+                    <span style="font-size: 16px;">📤</span> 分享数据
                 </button>
                 <button class="btn-sync sync-help-btn" onclick="showSyncHelp()" title="使用帮助">
                     ❓
@@ -783,18 +810,21 @@
             <div class="sync-instruction">
                 <h3>使用方法：</h3>
                 <ol>
-                    <li><strong>在电脑A上修改分数后：</strong>点击"上传"按钮</li>
-                    <li><strong>在电脑B上获取数据：</strong>点击"下载"按钮</li>
-                    <li>数据会自动同步到所有设备</li>
+                    <li><strong>在电脑A上：</strong>点击"分享数据"按钮</li>
+                    <li><strong>复制生成的链接</strong>，通过微信/QQ/邮件发送到电脑B</li>
+                    <li><strong>在电脑B上：</strong>用浏览器打开该链接</li>
+                    <li>系统会自动检测到数据并询问是否导入</li>
+                    <li>点击"确定"即可完成同步</li>
                 </ol>
             </div>
             
             <div class="sync-instruction">
                 <h4>💡 提示：</h4>
                 <ul>
-                    <li>所有设备使用相同的系统即可同步</li>
-                    <li>修改数据后建议立即上传</li>
-                    <li>在其他设备上点击下载获取最新数据</li>
+                    <li>链接包含所有分数数据，请勿泄露</li>
+                    <li>链接24小时内有效</li>
+                    <li>可以在不同电脑、手机间同步</li>
+                    <li>建议修改分数后立即分享</li>
                 </ul>
             </div>
             
@@ -808,8 +838,6 @@
         // ==================== 系统配置 ====================
         // 默认密码为 "admin123"
         const DEFAULT_PASSWORD = "135seventeen";
-        // 固定同步密码
-        const FIXED_SYNC_PASSWORD = "17class";
         
         // 学生姓名数据
         const studentNames = [
@@ -835,16 +863,11 @@
         // 登录状态
         let isLoggedIn = false;
         
-        // 同步相关状态
-        let syncSettings = {
-            syncPassword: FIXED_SYNC_PASSWORD
-        };
-
-        // 页面加载时从本地存储读取数据
+        // 页面加载时从本地存储读取数据并检查URL参数
         window.onload = function() {
             loadFromLocalStorage();
-            loadSyncSettings();
             checkLoginStatus();
+            checkUrlForData(); // 检查URL中是否有分享的数据
             showMessage("系统已加载，当前共有46名学生数据");
         };
 
@@ -894,23 +917,6 @@
             document.getElementById("btnSync").classList.add("disabled-btn");
             
             tempChanges = {};
-        }
-
-        // 加载同步设置
-        function loadSyncSettings() {
-            const savedSettings = localStorage.getItem("syncSettings");
-            if (savedSettings) {
-                try {
-                    syncSettings = JSON.parse(savedSettings);
-                } catch (e) {
-                    console.error("加载同步设置失败", e);
-                }
-            }
-        }
-
-        // 保存同步设置
-        function saveSyncSettings() {
-            localStorage.setItem("syncSettings", JSON.stringify(syncSettings));
         }
 
         // 登录函数
@@ -984,86 +990,191 @@
             return true;
         }
 
-        // ==================== 同步功能 ====================
+        // ==================== 分享链接同步功能 ====================
         
-        // 上传数据到云端（实际上传到本地存储，模拟云端）
-        function uploadToCloud() {
+        // 生成分享链接
+        function generateShareLink() {
             if (!isLoggedIn) {
-                showMessage("请先登录才能同步数据", "error");
+                showMessage("请先登录才能分享数据", "error");
                 return;
             }
             
-            showMessage("正在上传数据...", "info");
+            // 准备要分享的数据
+            const shareData = {
+                scores: scores.slice(1),
+                timestamp: new Date().toISOString(),
+                version: "1.0",
+                studentCount: 46,
+                // 添加校验码防止数据篡改
+                checksum: scores.slice(1).reduce((sum, score) => sum + score, 0)
+            };
             
-            // 模拟上传延迟
-            setTimeout(() => {
-                // 准备要上传的数据
-                const syncData = {
-                    scores: scores.slice(1), // 只保存1-46的数据
-                    timestamp: new Date().toISOString(),
-                    version: "1.0",
-                    studentCount: 46
-                };
-                
-                // 使用固定密码作为键名保存到本地存储
-                localStorage.setItem("cloud_sync_data_" + syncSettings.syncPassword, JSON.stringify(syncData));
-                
-                showMessage("✅ 数据已成功上传！");
-            }, 800);
+            // 将数据编码为Base64
+            const encodedData = btoa(JSON.stringify(shareData));
+            
+            // 生成分享链接（使用URL片段，不会刷新页面）
+            const currentUrl = window.location.origin + window.location.pathname;
+            const shareUrl = `${currentUrl}#data=${encodedData}`;
+            
+            // 创建并显示分享弹窗
+            const shareModal = document.createElement('div');
+            shareModal.innerHTML = `
+                <div class="modal" style="display: flex;" id="shareLinkModal">
+                    <div class="modal-content" style="max-width: 500px;">
+                        <span class="close" onclick="closeShareLinkModal()">&times;</span>
+                        <h2>📤 生成分享链接</h2>
+                        
+                        <div class="data-info">
+                            <p><strong>包含数据：</strong>46名学生分数</p>
+                            <p><strong>生成时间：</strong>${new Date().toLocaleString()}</p>
+                        </div>
+                        
+                        <div class="share-instruction">
+                            <p><strong>使用方法：</strong></p>
+                            <ol style="margin-left: 20px;">
+                                <li>复制下面的链接</li>
+                                <li>发送到另一台设备（微信/QQ/邮件）</li>
+                                <li>在另一台设备上用浏览器打开</li>
+                                <li>系统会自动导入数据</li>
+                            </ol>
+                        </div>
+                        
+                        <textarea class="share-link-textarea" id="shareLinkText" readonly>${shareUrl}</textarea>
+                        
+                        <div style="text-align: center;">
+                            <button onclick="copyShareLink()" style="background-color: #28a745; padding: 10px 20px; margin-right: 10px;">
+                                📋 复制链接
+                            </button>
+                            <button onclick="testShareLink()" style="background-color: #17a2b8; padding: 10px 20px; margin-right: 10px;">
+                                🔗 测试链接
+                            </button>
+                            <button onclick="closeShareLinkModal()" style="padding: 10px 20px;">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(shareModal);
         }
 
-        // 从云端下载数据
-        function downloadFromCloud() {
-            if (!isLoggedIn) {
-                showMessage("请先登录才能同步数据", "error");
-                return;
+        // 关闭分享链接弹窗
+        function closeShareLinkModal() {
+            const modal = document.getElementById('shareLinkModal');
+            if (modal) {
+                modal.remove();
             }
+        }
+
+        // 复制分享链接
+        function copyShareLink() {
+            const textarea = document.getElementById('shareLinkText');
+            if (!textarea) return;
             
-            showMessage("正在下载数据...", "info");
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // 对于移动设备
             
-            setTimeout(() => {
-                // 从本地存储获取云端数据
-                const cloudDataStr = localStorage.getItem("cloud_sync_data_" + syncSettings.syncPassword);
+            try {
+                document.execCommand('copy');
+                showMessage("✅ 链接已复制到剪贴板！请发送到另一台设备");
+            } catch (err) {
+                // 如果execCommand失败，尝试使用Clipboard API
+                navigator.clipboard.writeText(textarea.value).then(() => {
+                    showMessage("✅ 链接已复制到剪贴板！请发送到另一台设备");
+                }).catch(() => {
+                    showMessage("复制失败，请手动选择并复制链接", "error");
+                });
+            }
+        }
+
+        // 测试分享链接
+        function testShareLink() {
+            const textarea = document.getElementById('shareLinkText');
+            if (!textarea) return;
+            
+            const shareUrl = textarea.value;
+            
+            // 在新标签页打开链接
+            window.open(shareUrl, '_blank');
+            
+            showMessage("✅ 已在新标签页打开链接，请检查是否正常显示导入提示", "info");
+        }
+
+        // 检查URL中是否有分享的数据
+        function checkUrlForData() {
+            // 获取URL中的hash部分
+            const hash = window.location.hash;
+            
+            if (hash && hash.includes('data=')) {
+                // 从URL中提取编码的数据
+                const encodedData = hash.split('data=')[1];
                 
-                if (!cloudDataStr) {
-                    showMessage("没有找到云端数据，请先在另一台设备上传数据", "error");
+                // 如果有数据，尝试解码并导入
+                setTimeout(() => {
+                    importSharedData(encodedData);
+                }, 500); // 延迟500ms，确保页面完全加载
+            }
+        }
+
+        // 导入分享的数据
+        function importSharedData(encodedData) {
+            try {
+                // 解码Base64数据
+                const decodedData = atob(encodedData);
+                const shareData = JSON.parse(decodedData);
+                
+                // 验证数据完整性
+                if (!shareData.scores || shareData.scores.length !== 46) {
+                    showMessage("数据格式错误，无法导入", "error");
                     return;
                 }
                 
-                try {
-                    const cloudData = JSON.parse(cloudDataStr);
-                    
-                    // 验证数据
-                    if (!cloudData.scores || cloudData.scores.length !== 46) {
-                        showMessage("云端数据格式错误", "error");
-                        return;
-                    }
-                    
-                    // 询问用户是否确认覆盖
-                    const time = new Date(cloudData.timestamp).toLocaleString();
-                    if (!confirm(`发现云端数据（更新时间：${time}），确定要下载并覆盖当前数据吗？`)) {
-                        showMessage("已取消下载", "info");
-                        return;
-                    }
-                    
-                    // 应用云端数据
+                // 计算校验码
+                const calculatedChecksum = shareData.scores.reduce((sum, score) => sum + score, 0);
+                if (shareData.checksum && shareData.checksum !== calculatedChecksum) {
+                    showMessage("数据校验失败，可能已被篡改", "error");
+                    return;
+                }
+                
+                // 显示导入确认对话框
+                const time = new Date(shareData.timestamp).toLocaleString();
+                const confirmMessage = `发现分享的分数数据（更新时间：${time}），共${shareData.studentCount}名学生。\n\n是否要导入这些数据？`;
+                
+                if (confirm(confirmMessage)) {
+                    // 应用数据
                     scores = new Array(47).fill(100);
                     for (let i = 0; i < 46; i++) {
-                        scores[i + 1] = cloudData.scores[i];
+                        scores[i + 1] = shareData.scores[i];
                     }
                     
-                    // 保存到本地
+                    // 保存到本地存储
                     localStorage.setItem("classScores", JSON.stringify(scores));
                     
-                    showMessage("✅ 已下载最新数据！");
+                    // 清除URL中的参数（避免重复导入）
+                    window.location.hash = '';
                     
-                    // 刷新显示
-                    showScoreList();
+                    showMessage(`✅ 成功导入${shareData.studentCount}名学生的分数数据！`);
                     
-                } catch (e) {
-                    showMessage("下载数据失败：" + e.message, "error");
+                    // 如果已登录，刷新显示
+                    if (isLoggedIn) {
+                        showScoreList();
+                    } else {
+                        // 如果未登录，显示提示
+                        showMessage("数据已导入，请登录后查看", "info");
+                    }
+                } else {
+                    // 用户取消导入，清除URL参数
+                    window.location.hash = '';
+                    showMessage("已取消数据导入", "info");
                 }
-            }, 800);
+                
+            } catch (error) {
+                console.error("导入数据失败:", error);
+                showMessage("导入数据失败：数据格式错误或已损坏", "error");
+                // 清除错误的URL参数
+                window.location.hash = '';
+            }
         }
 
         // 显示同步面板
