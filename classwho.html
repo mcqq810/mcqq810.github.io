@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 修改这里的标题 -->
+    <title>海豹公司</title>
+    
+    <style>
+        /* 基础保护样式 */
+        body {
+            -webkit-touch-callout: none;    /* iOS Safari */
+            -webkit-user-select: none;      /* Safari */
+            -khtml-user-select: none;       /* Konqueror HTML */
+            -moz-user-select: none;         /* Firefox */
+            -ms-user-select: none;          /* Internet Explorer/Edge */
+            user-select: none;              /* 标准语法 */
+            cursor: default;                /* 默认光标 */
+        }
+    </style>
+    
+    <script>
+        // ========== 禁用右键菜单 ==========
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // ========== 禁用键盘快捷键 ==========
+        document.addEventListener('keydown', function(e) {
+            const key = e.key || e.keyCode;
+            const ctrl = e.ctrlKey || e.metaKey;
+            const shift = e.shiftKey;
+            
+            // 阻止的快捷键列表
+            const blockedCombinations = [
+                // F12
+                { condition: key === 'F12' || e.keyCode === 123 },
+                // Ctrl+U (查看源代码)
+                { condition: ctrl && (key === 'u' || e.keyCode === 85) },
+                // Ctrl+Shift+I (开发者工具)
+                { condition: ctrl && shift && (key === 'I' || e.keyCode === 73) },
+                // Ctrl+Shift+J (控制台)
+                { condition: ctrl && shift && (key === 'J' || e.keyCode === 74) },
+                // Ctrl+S (保存网页)
+                { condition: ctrl && (key === 's' || e.keyCode === 83) },
+                // Ctrl+Shift+C (检查元素)
+                { condition: ctrl && shift && (key === 'C' || e.keyCode === 67) },
+                // Ctrl+P (打印)
+                { condition: ctrl && (key === 'p' || e.keyCode === 80) },
+                // Ctrl+N (新建窗口)
+                { condition: ctrl && (key === 'n' || e.keyCode === 78) }
+            ];
+            
+            for (const combo of blockedCombinations) {
+                if (combo.condition) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }
+        });
+        
+        // ========== 禁用文本选择 ==========
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // ========== 禁用拖拽 ==========
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // ========== 开发者工具检测 ==========
+        (function() {
+            // 简单的开发者工具检测
+            const element = new Image();
+            Object.defineProperty(element, 'id', {
+                get: function() {
+                    // 当控制台打开时调用
+                    // 可以在这里添加其他处理逻辑
+                }
+            });
+            
+            console.log('%c ', element);
+            
+            // 定期检查窗口大小变化
+            setInterval(() => {
+                const widthThreshold = window.outerWidth - window.innerWidth > 100;
+                const heightThreshold = window.outerHeight - window.innerHeight > 100;
+                
+                if (widthThreshold || heightThreshold) {
+                    // 检测到开发者工具打开
+                }
+            }, 1000);
+            
+            // 检测控制台打开
+            const devtools = {
+                open: false,
+                orientation: null
+            };
+            
+            const threshold = 160;
+            
+            const emitEvent = (isOpen, orientation) => {
+                if (devtools.open !== isOpen || devtools.orientation !== orientation) {
+                    devtools.open = isOpen;
+                    devtools.orientation = orientation;
+                }
+            };
+            
+            setInterval(() => {
+                const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+                const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+                
+                if (!(window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) || widthThreshold || heightThreshold) {
+                    if (!devtools.open || devtools.orientation !== (widthThreshold ? 'vertical' : 'horizontal')) {
+                        emitEvent(true, widthThreshold ? 'vertical' : 'horizontal');
+                    }
+                } else {
+                    if (devtools.open) {
+                        emitEvent(false, null);
+                    }
+                }
+            }, 500);
+        })();
+        
+        // ========== 页面加载完成 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // 干扰控制台
+            if (typeof console !== 'undefined') {
+                // 重写console方法
+                const originalLog = console.log;
+                const originalWarn = console.warn;
+                const originalError = console.error;
+                const originalClear = console.clear;
+                
+                console.log = function(...args) {
+                    originalLog.apply(console, ['🔒', ...args]);
+                };
+                
+                console.warn = function(...args) {
+                    originalWarn.apply(console, ['⚠️ 警告：', ...args]);
+                };
+                
+                console.error = function(...args) {
+                    originalError.apply(console, ['❌ 错误：', ...args]);
+                };
+                
+                console.clear = function() {
+                    // 阻止清除控制台
+                    originalLog.apply(console, ['控制台清除已禁用']);
+                };
+            }
+            
+            // 添加假的查看源代码按钮（可选）
+            if (false) { // 设置为true启用伪装按钮
+                addFakeViewSourceButton();
+            }
+        });
+        
+        // ========== 伪装查看源代码按钮（可选） ==========
+        function addFakeViewSourceButton() {
+            const button = document.createElement('button');
+            button.innerHTML = '📄 查看源代码';
+            button.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 25px;
+                cursor: pointer;
+                z-index: 1000;
+                font-size: 14px;
+                font-weight: bold;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                transition: all 0.3s ease;
+            `;
+            
+            button.onmouseover = function() {
+                this.style.transform = 'scale(1.05)';
+                this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+            };
+            
+            button.onmouseout = function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+            };
+            
+            button.onclick = function() {
+                const fakeWindow = document.createElement('div');
+                fakeWindow.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: #1a1a1a;
+                    color: #00ff00;
+                    font-family: 'Courier New', monospace;
+                    padding: 20px;
+                    z-index: 9998;
+                    overflow: auto;
+                    white-space: pre;
+                    font-size: 14px;
+                `;
+                
+                fakeWindow.innerHTML = `
+                    <div style="text-align: right; margin-bottom: 20px;">
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="background: #ff4757; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">
+                            关闭
+                        </button>
+                    </div>
+                    <div style="color: #ffa502; margin-bottom: 20px;">
+                        // ================================================
+                        //             🔒 受保护的源代码
+                        // ================================================
+                        // 此页面源代码已加密，禁止访问！
+                        // 如需查看源代码，请联系管理员获取权限。
+                        // ================================================
+                    </div>
+                    <div>
+                        // 加密代码片段...
+                        function encryptedFunction() {
+                            return "代码已加密";
+                        }
+                        
+                        // 更多加密内容...
+                        console.log("访问被拒绝");
+                        // 最后更新: ${new Date().toLocaleString()}
+                    </div>
+                `;
+                
+                document.body.appendChild(fakeWindow);
+            };
+            
+            document.body.appendChild(button);
+        }
+        
+        // ========== 防止复制到剪贴板 ==========
+        document.addEventListener('copy', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        document.addEventListener('cut', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // ========== 防止粘贴 ==========
+        document.addEventListener('paste', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // ========== 防止打印页面 ==========
+        window.addEventListener('beforeprint', function(e) {
+            e.preventDefault();
+            return false;
+        });
+        
+        // ========== 防止保存页面 ==========
+        window.addEventListener('beforeunload', function(e) {
+            // 防止某些情况下的页面保存
+        });
+        
+        // ========== 防止iframe嵌入 ==========
+        if (window.top !== window.self) {
+            window.top.location = window.self.location;
+        }
+        
+        // ========== 防止键盘攻击 ==========
+        document.addEventListener('keydown', function(e) {
+            // 禁用某些功能键
+            const disabledKeys = [
+                116, // F5
+                123  // F12
+            ];
+            
+            if (disabledKeys.includes(e.keyCode)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+    </script>
+</head>
+<body>
+    <!-- 你的页面内容从这里开始 -->
+    <!-- 注意：上面的保护代码必须放在所有内容之前 -->
+    <!-- 把原来的页面内容放在这里 -->
+    
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级抽签工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 50;
+        }
+        
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 40px;
+            width: 100%;
+        }
+        
+        .sidebar-title {
+            color: white;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .sidebar-sponsor {
+            color: #ffd700;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        .control-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-label {
+            display: block;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .number-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .number-input:focus {
+            border-color: #ffd700;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+            background: white;
+        }
+        
+        .radio-options {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            transition: color 0.3s;
+        }
+        
+        .radio-label:hover {
+            color: #ffd700;
+        }
+        
+        .radio-label input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #ffd700;
+        }
+        
+        .button-section {
+            width: 100%;
+            margin-top: auto;
+            margin-bottom: 25px;
+        }
+        
+        .main-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(to bottom, #ffd700, #ffcc00);
+            color: #333;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        button::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        button:hover::after {
+            left: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(to bottom, #ffcc00, #ffbb00);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+            background: linear-gradient(to bottom, #ffbb00, #ffaa00);
+        }
+        
+        button:disabled {
+            background: linear-gradient(to bottom, #cccccc, #aaaaaa);
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        button:disabled::after {
+            display: none;
+        }
+        
+        #resetBtn {
+            background: linear-gradient(to bottom, #ffd700, #ffcc00);
+            color: #333;
+        }
+        
+        #resetBtn:hover {
+            background: linear-gradient(to bottom, #ffcc00, #ffbb00);
+        }
+        
+        #resetBtn:active {
+            background: linear-gradient(to bottom, #ffbb00, #ffaa00);
+        }
+        
+        .sidebar-footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 280px);
+        }
+        
+        .container {
+            max-width: none;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        /* 主标题区域 */
+        .main-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            padding: 20px 30px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .main-header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            z-index: 1;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .title-with-results {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex: 1;
+        }
+        
+        .main-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            white-space: nowrap;
+        }
+        
+        .main-title h1 {
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+        }
+        
+        .main-sponsor {
+            font-size: 14px;
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+        
+        /* 抽取结果紧挨着标题右侧 */
+        .header-results {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        /* 修改结果徽章样式 - 只显示黄色部分 */
+        .result-badge {
+            background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+            animation: popIn 0.3s ease-out;
+            font-size: 16px;
+            white-space: nowrap;
+            text-align: center;
+            min-width: 60px;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* 统计信息 */
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .header-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .header-stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 概率控制按钮 */
+        .probability-controls {
+            display: none;
+            gap: 10px;
+        }
+        
+        .probability-controls.show {
+            display: flex;
+        }
+        
+        .prob-btn {
+            background: linear-gradient(to bottom, #ffd700, #ffcc00);
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .prob-btn:hover {
+            background: linear-gradient(to bottom, #ffcc00, #ffbb00);
+            transform: translateY(-2px);
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 8px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        @media (max-width: 1800px) {
+            .grid-container {
+                grid-template-columns: repeat(12, 1fr);
+            }
+        }
+        
+        @media (max-width: 1600px) {
+            .grid-container {
+                grid-template-columns: repeat(10, 1fr);
+            }
+        }
+        
+        @media (max-width: 1400px) {
+            .grid-container {
+                grid-template-columns: repeat(8, 1fr);
+            }
+            
+            .sidebar {
+                width: 250px;
+            }
+            
+            .main-content {
+                margin-left: 250px;
+                width: calc(100% - 250px);
+            }
+            
+            .title-with-results {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .header-results {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .grid-container {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .grid-container {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            
+            body {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .main-header {
+                padding: 15px 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .control-section {
+                padding: 15px;
+            }
+            
+            .radio-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .result-badge {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+            
+            .header-stats {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .main-header {
+                padding: 12px 15px;
+            }
+            
+            .main-title h1 {
+                font-size: 1.6rem;
+            }
+            
+            .title-with-results {
+                gap: 8px;
+            }
+            
+            .header-results {
+                gap: 8px;
+            }
+            
+            .result-badge {
+                font-size: 12px;
+                padding: 5px 10px;
+                min-width: 50px;
+            }
+        }
+        
+        /* 号码显示框 */
+        .item {
+            position: relative;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%);
+            border-radius: 8px;
+            padding: 15px 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid transparent;
+        }
+        
+        .item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .item-number {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 6px;
+            color: #4a6ee0;
+        }
+        
+        .item-index {
+            font-size: 11px;
+            color: #666;
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            opacity: 0.6;
+        }
+        
+        .probability-display {
+            font-size: 10px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .selected {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffefc3 100%);
+            border: 2px solid #ffd700;
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+            animation: selectedPulse 0.5s ease-out;
+        }
+        
+        @keyframes selectedPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        .drawing-box {
+            position: absolute;
+            background-color: rgba(255, 215, 0, 0.4);
+            border: 3px solid #ffd700;
+            border-radius: 8px;
+            z-index: 10;
+            transition: all 0.1s ease-out;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">班级抽签工具</h2>
+            <div class="sidebar-sponsor">由海豹公司提供技术支持</div>
+        </div>
+        
+        <div class="control-section">
+            <div class="control-group">
+                <label class="control-label">抽取人数</label>
+                <input type="number" id="drawCount" class="number-input" min="1" max="50" value="1">
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">是否允许重复</label>
+                <div class="radio-options">
+                    <label class="radio-label">
+                        <input type="radio" name="allowRepeat" value="true"> 允许
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="allowRepeat" value="false" checked> 不允许
+                    </label>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">总人数 (2-60人)</label>
+                <input type="number" id="totalCount" class="number-input" min="2" max="60" value="50">
+                <div id="totalCountDisplay" style="color: white; font-size: 12px; text-align: center; margin-top: 8px;">当前: 50人</div>
+            </div>
+        </div>
+        
+        <div class="button-section">
+            <div class="main-buttons">
+                <button id="startBtn">开始抽签</button>
+                <button id="resetBtn">重置概率</button>
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <p>班级抽签工具 &copy; 2023</p>
+        </div>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <div class="container">
+            <!-- 主标题区域 -->
+            <div class="main-header">
+                <div class="header-content">
+                    <div class="title-with-results">
+                        <div class="main-title">
+                            <h1>抽签号码列表</h1>
+                            <div class="main-sponsor">由海豹公司提供技术支持</div>
+                        </div>
+                        
+                        <!-- 抽取结果紧挨着标题右侧 -->
+                        <div class="header-results" id="headerResults">
+                            <!-- 抽取结果将动态显示在这里 -->
+                        </div>
+                    </div>
+                    
+                    <div class="header-stats">
+                        <div class="header-stat-item">
+                            <span class="header-stat-label">总人数:</span>
+                            <span class="header-stat-value" id="totalCountValue">50</span>
+                        </div>
+                        <div class="header-stat-item">
+                            <span class="header-stat-label">概率:</span>
+                            <span class="header-stat-value" id="headerProbabilityValue">0%</span>
+                        </div>
+                        <div class="header-stat-item">
+                            <span class="header-stat-label">次数:</span>
+                            <span class="header-stat-value" id="headerTotalDraws">0</span>
+                        </div>
+                        
+                        <!-- 概率控制按钮（当抽取单个人时显示） -->
+                        <div class="probability-controls" id="probabilityControls">
+                            <button class="prob-btn" id="increaseBtn">+ 概率</button>
+                            <button class="prob-btn" id="decreaseBtn">- 概率</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid-container" id="gridContainer">
+                <!-- 号码框将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="footer">
+                <p>班级抽签工具 &copy; 2023 | 由海豹公司提供技术支持</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let totalCount = 50; // 总人数，默认50
+        let probabilities = []; // 概率数组
+        let totalProbability = 0; // 总概率
+        let totalDraws = 0; // 总抽取次数
+        let selectedNumbers = new Set(); // 选中的号码集合
+        let isDrawing = false; // 是否正在抽签
+        let drawingBox = null; // 抽取动画框
+        let currentResults = []; // 当前抽中的结果
+        
+        // 初始化网格
+        function initGrid() {
+            const gridContainer = document.getElementById('gridContainer');
+            gridContainer.innerHTML = '';
+            
+            // 更新抽取人数上限
+            const drawCountInput = document.getElementById('drawCount');
+            drawCountInput.max = totalCount;
+            if (parseInt(drawCountInput.value) > totalCount) {
+                drawCountInput.value = totalCount;
+            }
+            
+            // 初始化概率数组
+            probabilities = Array(totalCount).fill(1);
+            totalProbability = totalCount;
+            
+            // 生成号码框
+            for (let i = 0; i < totalCount; i++) {
+                const item = document.createElement('div');
+                item.className = 'item';
+                item.id = `item-${i}`;
+                
+                const number = document.createElement('div');
+                number.className = 'item-number';
+                number.textContent = `${i + 1}号`;
+                
+                //const index = document.createElement('div');
+                //index.className = 'item-index';
+                //index.textContent = `#${i + 1}`;
+                
+                const probability = document.createElement('div');
+                probability.className = 'probability-display';
+                probability.textContent = `概率: ${(1 / totalCount * 100).toFixed(1)}%`;
+                
+                item.appendChild(number);
+                //item.appendChild(index);
+                item.appendChild(probability);
+                
+                gridContainer.appendChild(item);
+            }
+            
+            // 更新头部显示的总人数
+            document.getElementById('totalCountValue').textContent = totalCount;
+        }
+        
+        // 更新概率显示
+        function updateProbabilities() {
+            for (let i = 0; i < totalCount; i++) {
+                const probabilityElement = document.querySelector(`#item-${i} .probability-display`);
+                probabilityElement.textContent = `概率: ${(probabilities[i] / totalProbability * 100).toFixed(1)}%`;
+            }
+        }
+        
+        // 更新头部结果显示 - 修改为只显示黄色号数
+        function updateHeaderResults(results) {
+            const headerResults = document.getElementById('headerResults');
+            headerResults.innerHTML = '';
+            
+            if (results.length === 0) {
+                return;
+            }
+            
+            // 显示当前抽中的结果（最多显示6个）
+            const displayResults = results.slice(0, 6);
+            
+            displayResults.forEach((result) => {
+                const resultBadge = document.createElement('div');
+                resultBadge.className = 'result-badge';
+                resultBadge.textContent = `${result.number}号`;
+                
+                headerResults.appendChild(resultBadge);
+            });
+            
+            // 如果有多于6个结果，显示省略号
+            if (results.length > 6) {
+                const moreBadge = document.createElement('div');
+                moreBadge.className = 'result-badge';
+                moreBadge.textContent = `+${results.length - 6}`;
+                headerResults.appendChild(moreBadge);
+            }
+        }
+        
+        // 更新头部统计信息
+        function updateHeaderStats() {
+            document.getElementById('headerTotalDraws').textContent = totalDraws;
+            
+            if (currentResults.length > 0) {
+                const totalProbabilityValue = currentResults.reduce((sum, result) => {
+                    const index = result.number - 1;
+                    return sum + (probabilities[index] / totalProbability);
+                }, 0);
+                const avgProbability = totalProbabilityValue / currentResults.length * 100;
+                document.getElementById('headerProbabilityValue').textContent = `${avgProbability.toFixed(1)}%`;
+            } else {
+                document.getElementById('headerProbabilityValue').textContent = '0%';
+            }
+        }
+        
+        // 开始抽签
+        function startDrawing() {
+            if (isDrawing) return;
+            
+            const drawCount = parseInt(document.getElementById('drawCount').value);
+            const allowRepeat = document.querySelector('input[name="allowRepeat"]:checked').value === 'true';
+            
+            // 验证输入
+            if (isNaN(drawCount) || drawCount < 1 || drawCount > totalCount) {
+                alert(`请输入1-${totalCount}之间的有效数字！`);
+                return;
+            }
+            
+            if (!allowRepeat && drawCount > totalCount) {
+                alert(`不允许重复时，最多只能抽取${totalCount}个！`);
+                return;
+            }
+            
+            isDrawing = true;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('resetBtn').disabled = true;
+            document.getElementById('drawCount').disabled = true;
+            document.getElementById('totalCount').disabled = true;
+            document.querySelectorAll('input[name="allowRepeat"]').forEach(radio => {
+                radio.disabled = true;
+            });
+            
+            // 隐藏概率控制按钮
+            document.getElementById('probabilityControls').classList.remove('show');
+            
+            // 清除之前的选择
+            selectedNumbers.forEach(index => {
+                document.getElementById(`item-${index}`).classList.remove('selected');
+            });
+            selectedNumbers.clear();
+            
+            // 创建抽取框
+            drawingBox = document.createElement('div');
+            drawingBox.className = 'drawing-box';
+            document.body.appendChild(drawingBox);
+            
+            // 根据抽签设置选择最终结果
+            const results = [];
+            const usedIndices = new Set();
+            
+            for (let i = 0; i < drawCount; i++) {
+                let resultIndex = -1;
+                
+                if (allowRepeat) {
+                    // 允许重复
+                    const randomValue = Math.random() * totalProbability;
+                    let cumulativeProbability = 0;
+                    
+                    for (let j = 0; j < probabilities.length; j++) {
+                        cumulativeProbability += probabilities[j];
+                        if (randomValue <= cumulativeProbability) {
+                            resultIndex = j;
+                            break;
+                        }
+                    }
+                } else {
+                    // 不允许重复
+                    if (usedIndices.size >= probabilities.length) {
+                        break; // 没有更多可选的了
+                    }
+                    
+                    // 计算剩余概率
+                    let remainingProbability = 0;
+                    probabilities.forEach((prob, index) => {
+                        if (!usedIndices.has(index)) {
+                            remainingProbability += prob;
+                        }
+                    });
+                    
+                    const randomValue = Math.random() * remainingProbability;
+                    let cumulativeProbability = 0;
+                    
+                    for (let j = 0; j < probabilities.length; j++) {
+                        if (!usedIndices.has(j)) {
+                            cumulativeProbability += probabilities[j];
+                            if (randomValue <= cumulativeProbability) {
+                                resultIndex = j;
+                                usedIndices.add(j);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (resultIndex !== -1) {
+                    results.push(resultIndex);
+                    selectedNumbers.add(resultIndex);
+                }
+            }
+            
+            // 动画参数 - 快速版本，总时间2秒
+            const totalTime = 2000;
+            const items = document.querySelectorAll('.item');
+            const positions = [];
+            
+            items.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                positions.push({
+                    left: rect.left + window.scrollX,
+                    top: rect.top + window.scrollY,
+                    width: rect.width,
+                    height: rect.height
+                });
+            });
+            
+            // 保持单遍循环
+            const totalCycles = 1;
+            const itemsCount = positions.length;
+            const totalSteps = totalCycles * itemsCount + (results[0] || 0);
+            
+            let currentStep = 0;
+            let startTime = Date.now();
+            
+            function animate() {
+                const elapsedTime = Date.now() - startTime;
+                const progress = Math.min(elapsedTime / totalTime, 1);
+                
+                // 计算当前步骤
+                currentStep = Math.floor(progress * totalSteps);
+                const currentIndex = currentStep % itemsCount;
+                
+                // 移动到当前位置
+                const pos = positions[currentIndex];
+                drawingBox.style.left = `${pos.left}px`;
+                drawingBox.style.top = `${pos.top}px`;
+                drawingBox.style.width = `${pos.width}px`;
+                drawingBox.style.height = `${pos.height}px`;
+                
+                // 快速速度 - 两个阶段
+                let speed;
+                if (progress < 0.8) {
+                    // 主要移动阶段：非常快
+                    speed = 15;
+                } else {
+                    // 最后阶段：稍慢一点制造悬念
+                    const remainingProgress = 1 - 0.8;
+                    const currentProgress = progress - 0.8;
+                    const speedFactor = 1 - (currentProgress / remainingProgress);
+                    speed = 15 + (80 - 15) * speedFactor;
+                }
+                
+                if (progress < 1) {
+                    // 继续动画
+                    setTimeout(animate, speed);
+                } else {
+                    // 动画结束，显示结果
+                    finishDrawing(results);
+                }
+            }
+            
+            // 开始动画
+            animate();
+        }
+        
+        // 完成抽签
+        function finishDrawing(results) {
+            // 移除抽取框
+            if (drawingBox) {
+                document.body.removeChild(drawingBox);
+                drawingBox = null;
+            }
+            
+            // 显示选中的号码
+            results.forEach((index, i) => {
+                const selectedItem = document.getElementById(`item-${index}`);
+                selectedItem.classList.add('selected');
+                selectedItem.style.animationDelay = `${i * 0.1}s`;
+            });
+            
+            // 更新当前结果
+            currentResults = results.map(index => ({
+                index: index,
+                number: index + 1
+            }));
+            
+            // 更新头部显示
+            updateHeaderResults(currentResults);
+            totalDraws++;
+            updateHeaderStats();
+            
+            // 显示概率控制按钮（仅当抽取1个时）
+            if (results.length === 1) {
+                document.getElementById('probabilityControls').classList.add('show');
+            } else {
+                document.getElementById('probabilityControls').classList.remove('show');
+            }
+            
+            // 恢复按钮状态
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('resetBtn').disabled = false;
+            document.getElementById('drawCount').disabled = false;
+            document.getElementById('totalCount').disabled = false;
+            document.querySelectorAll('input[name="allowRepeat"]').forEach(radio => {
+                radio.disabled = false;
+            });
+            isDrawing = false;
+        }
+        
+        // 增加概率
+        function increaseProbability() {
+            if (selectedNumbers.size !== 1) return;
+            
+            const selectedIndex = Array.from(selectedNumbers)[0];
+            probabilities[selectedIndex]++;
+            totalProbability++;
+            updateProbabilities();
+            updateHeaderStats();
+        }
+        
+        // 减少概率
+        function decreaseProbability() {
+            if (selectedNumbers.size !== 1 || probabilities[Array.from(selectedNumbers)[0]] <= 1) return;
+            
+            const selectedIndex = Array.from(selectedNumbers)[0];
+            probabilities[selectedIndex]--;
+            totalProbability--;
+            updateProbabilities();
+            updateHeaderStats();
+        }
+        
+        // 重置概率
+        function resetProbabilities() {
+            probabilities = Array(totalCount).fill(1);
+            totalProbability = totalCount;
+            updateProbabilities();
+            
+            // 隐藏概率控制按钮
+            document.getElementById('probabilityControls').classList.remove('show');
+            
+            // 清除选择
+            selectedNumbers.forEach(index => {
+                document.getElementById(`item-${index}`).classList.remove('selected');
+            });
+            selectedNumbers.clear();
+            
+            // 清除结果
+            currentResults = [];
+            updateHeaderResults(currentResults);
+            updateHeaderStats();
+        }
+        
+        // 更新总人数
+        function updateTotalCount() {
+            const newTotalCount = parseInt(document.getElementById('totalCount').value);
+            
+            if (isNaN(newTotalCount) || newTotalCount < 2 || newTotalCount > 60) {
+                alert('请输入2-60之间的有效数字！');
+                document.getElementById('totalCount').value = totalCount;
+                document.getElementById('totalCountDisplay').textContent = `当前: ${totalCount}人`;
+                return;
+            }
+            
+            totalCount = newTotalCount;
+            document.getElementById('totalCountDisplay').textContent = `当前: ${totalCount}人`;
+            
+            // 重置所有状态
+            selectedNumbers.clear();
+            currentResults = [];
+            totalDraws = 0;
+            
+            // 重新初始化网格
+            initGrid();
+            resetProbabilities();
+            updateHeaderResults([]);
+            updateHeaderStats();
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initGrid();
+            
+            // 绑定事件
+            document.getElementById('startBtn').addEventListener('click', startDrawing);
+            document.getElementById('resetBtn').addEventListener('click', resetProbabilities);
+            document.getElementById('increaseBtn').addEventListener('click', increaseProbability);
+            document.getElementById('decreaseBtn').addEventListener('click', decreaseProbability);
+            
+            // 总人数控制
+            document.getElementById('totalCount').addEventListener('change', updateTotalCount);
+            
+            // 抽取人数输入验证
+            document.getElementById('drawCount').addEventListener('change', function() {
+                let value = parseInt(this.value);
+                if (isNaN(value) || value < 1) {
+                    this.value = 1;
+                } else if (value > totalCount) {
+                    this.value = totalCount;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
