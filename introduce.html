@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>团队介绍 - 海豹®无限公司</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== 重置与全局样式 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+        }
+
+        :root {
+            --primary-blue: #0066cc;
+            --secondary-blue: #0088ff;
+            --light-blue: #e6f2ff;
+            --dark-blue: #004d99;
+            --accent-yellow: #ffd700;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --bg-light: #f8f9fa;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            color: var(--text-dark);
+            line-height: 1.6;
+            background-color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background-color: var(--accent-yellow);
+            border-radius: 2px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--dark-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.3);
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        /* ===== 顶部导航栏（与海豹创作页面完全一致） ===== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            padding: 15px 0;
+            transition: var(--transition);
+        }
+
+        .header.scrolled {
+            padding: 10px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            background-color: rgba(255, 255, 255, 0.98);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .logo-text span {
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-list {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 20px;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .nav-link.active {
+            color: white;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            box-shadow: 0 4px 10px rgba(0, 102, 204, 0.2);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary-blue);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        /* 下拉菜单 */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            min-width: 200px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .dropdown:hover .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .dropdown-content a:hover {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+            padding-left: 25px;
+        }
+
+        /* ===== 英雄区域 ===== */
+        .hero {
+            padding: 140px 0 80px;
+            background: linear-gradient(135deg, var(--light-blue) 0%, #d4e4f5 100%);
+            text-align: center;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ===== 统计卡片 ===== */
+        .stats-section {
+            padding: 60px 0;
+            background-color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--light-blue), white);
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: var(--text-light);
+        }
+
+        /* ===== 搜索筛选栏 ===== */
+        .search-section {
+            padding: 0 0 40px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .search-input {
+            padding: 12px 20px;
+            width: 300px;
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 1px solid var(--border-color);
+            background: white;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        /* ===== 团队区域 - 确保8个部门每4个一行 ===== */
+        .team-section {
+            padding: 0 0 80px;
+        }
+
+        .department-title {
+            font-size: 28px;
+            color: var(--primary-blue);
+            margin: 50px 0 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--accent-yellow);
+            display: inline-block;
+        }
+
+        .department-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* 管理层一行三个 */
+        .management-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        /* 部门网格 - 每行4个 */
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        /* 部门卡片样式 */
+        .dept-card {
+            text-align: center;
+            padding: 30px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .dept-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+        }
+
+        .dept-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff8c00, #ffcc00);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: bold;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .dept-card:hover .dept-avatar {
+            transform: scale(1.05);
+        }
+
+        .dept-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 8px;
+        }
+
+        .dept-count {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .dept-members {
+            color: var(--text-light);
+            font-size: 13px;
+            line-height: 1.8;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .dept-members span {
+            display: inline-block;
+            background: var(--light-blue);
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin: 3px;
+            font-size: 12px;
+        }
+
+        /* 管理层卡片样式 */
+        .team-card {
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .team-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .team-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            font-weight: bold;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+        }
+
+        .team-card:hover .team-avatar {
+            transform: scale(1.05);
+        }
+
+        .team-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .team-role {
+            color: var(--primary-blue);
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+
+        /* 部门容器 */
+        .department-wrapper {
+            margin-bottom: 50px;
+        }
+
+        /* ===== 页脚 ===== */
+        .footer {
+            background-color: #00264d;
+            color: white;
+            padding: 70px 0 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-column h3 {
+            font-size: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background-color: var(--accent-yellow);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: #cccccc;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #999999;
+            font-size: 14px;
+        }
+
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 992px) {
+            .management-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .departments-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .hero h1 {
+                font-size: 36px;
+            }
+            .nav-list {
+                gap: 15px;
+            }
+            .nav-link {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: white;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+                border-radius: 0 0 10px 10px;
+            }
+            
+            .nav.active {
+                display: block;
+            }
+            
+            .nav-list {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .dropdown-content {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                box-shadow: none;
+                padding-left: 20px;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .management-grid {
+                grid-template-columns: 1fr;
+            }
+            .departments-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero {
+                padding: 120px 0 60px;
+            }
+            .hero h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏（与海豹创作页面完全一致） -->
+        <header class="header">
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">SEAL</div>
+                <div class="logo-text">海豹®<span>无限公司</span></div>
+            </a>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <nav class="nav" id="mainNav">
+                <ul class="nav-list">
+                    <li><a href="index.html" class="nav-link">公司主页</a></li>
+                    <li><a href="seal-creation.html" class="nav-link">海豹创作</a></li>
+                    <li><a href="introduce.html" class="nav-link active">团队介绍</a></li>
+                    <li><a href="sealbook.html" class="nav-link">百豹图</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <div class="container">
+            <h1><i class="fas fa-users"></i> 海豹大家庭</h1>
+            <p>一群热爱海豹、致力于让世界万物海豹化的可爱伙伴们</p>
+        </div>
+    </section>
+
+    <!-- 统计卡片 -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMembers">0</div>
+                    <div class="stat-label">全体成员</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDepartments">8</div>
+                    <div class="stat-label">职能部门</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">海豹品种</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">海豹化热情</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 搜索筛选栏 -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索成员姓名...">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-department="all">全部</button>
+                    <button class="filter-btn" data-department="管理层">👔 管理层</button>
+                    <button class="filter-btn" data-department="财务部">💰 财务部</button>
+                    <button class="filter-btn" data-department="工程部">⚙️ 工程部</button>
+                    <button class="filter-btn" data-department="安保部">🛡️ 安保部</button>
+                    <button class="filter-btn" data-department="员工部">👥 员工部</button>
+                    <button class="filter-btn" data-department="设计部">🎨 设计部</button>
+                    <button class="filter-btn" data-department="法务部">⚖️ 法务部</button>
+                    <button class="filter-btn" data-department="运营部">📊 运营部</button>
+                    <button class="filter-btn" data-department="网络部">🌐 网络部</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 团队展示区域 -->
+    <section class="team-section">
+        <div class="container" id="teamContainer">
+            <!-- 动态渲染团队内容 -->
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>海豹®无限公司</h3>
+                    <p style="color:#cccccc; line-height:1.8;">致力于将世界万物海豹化，为生活增添更多圆润与美好。</p>
+                </div>
+                
+                <div class="footer-column stagger-children">
+                    <h3>快速链接</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">公司主页</a></li>
+                        <li><a href="seal-creation.html">海豹创作</a></li>
+                        <li><a href="introduce.html">团队介绍</a></li>
+			<li><a href="sealbook.html">百豹图</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column stagger-children">
+                    <h3>画豹法则</h3>
+                    <ul class="footer-links">
+                        <li><a href="#rules">海豹必须为主体</a></li>
+                        <li><a href="#rules">眼睛必须为圆形</a></li>
+                        <li><a href="#rules">四肢可以变形</a></li>
+                        <li><a href="#rules">掌部最少有2条线</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column stagger-children">
+                    <h3>联系信息</h3>
+                    <ul class="footer-links">
+                        <li><a href="#rules">微信号:haibao223266</a></li>
+                        <li><a href="#rules">抖音号:sealll223266</a></li>
+                        <li><a href="#rules">邮箱: haibao11@hotmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2024 海豹®无限公司 - 让世界万物海豹化 | 遵循画豹法则，共创海豹世界</p>
+                <p style="margin-top:10px;">本公司最终解释权归老板所有，海豹®保留随时躺平的权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 员工数据
+        const staffData = {
+            management: [
+                { name: "张海豹_11", role: "创始人/CEO", avatar: "张", desc: "海豹化理念提出者，公司战略规划" },
+                { name: "林海豹_47", role: "副老板/COO", avatar: "林", desc: "负责公司运营与项目管理" },
+                { name: "杨海豹_24", role: "秘书/行政总监", avatar: "杨", desc: "负责日常事务与数据统计" }
+            ],
+            departments: {
+                "财务部": ["杨海豹_36", "黄海豹_33", "林海参_30", "何海龟_26"],
+                "工程部": ["庄海豹_01", "陈海参_26", "郑海参_01", "马海参_21"],
+                "安保部": ["金海豹_09", "黄海豹_35", "杨海豹_48", "陈海龟_20", "陈海龟_28", "蔡海龟_41", "高海龟_25"],
+                "员工部": ["刘海豹_03", "黄海豹_21", "胡海豹_25", "王海豹_31", "王海豹_41", "张海龟_08", "刘海龟_24", "陈海龟_10"],
+                "设计部": ["林海豹_06"],
+                "法务部": ["林海龟_02", "张海龟_18", "涂海龟_43"],
+                "运营部": ["邹海龟_29", "王海龟_06"],
+                "网络部": ["潘海龟_03", "郑海龟_15"]
+            }
+        };
+
+        // 计算总成员数
+        function calculateTotalMembers() {
+            let total = staffData.management.length;
+            for (const dept in staffData.departments) {
+                total += staffData.departments[dept].length;
+            }
+            return total;
+        }
+
+        // 更新统计数字
+        function updateStats() {
+            document.getElementById('totalMembers').textContent = calculateTotalMembers();
+        }
+
+        // 获取部门图标
+        function getDepartmentIcon(deptName) {
+            const icons = {
+                "财务部": "💰",
+                "工程部": "⚙️",
+                "安保部": "🛡️",
+                "员工部": "👥",
+                "设计部": "🎨",
+                "法务部": "⚖️",
+                "运营部": "📊",
+                "网络部": "🌐"
+            };
+            return icons[deptName] || "📁";
+        }
+
+        // 渲染团队 - 确保8个部门每4个一行
+        let currentFilter = "all";
+        let currentSearch = "";
+
+        function renderTeam() {
+            const container = document.getElementById('teamContainer');
+            container.innerHTML = '';
+            
+            // 渲染管理层
+            let managementMatches = [];
+            if (currentFilter === "all" || currentFilter === "管理层") {
+                managementMatches = staffData.management.filter(member => {
+                    return currentSearch === "" || member.name.toLowerCase().includes(currentSearch.toLowerCase());
+                });
+            }
+            
+            if (managementMatches.length > 0 && (currentFilter === "all" || currentFilter === "管理层")) {
+                const managementSection = document.createElement('div');
+                managementSection.innerHTML = `<h2 class="department-title"><i class="fas fa-crown" style="margin-right:10px;"></i> 管理层</h2>`;
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'management-grid';
+                
+                managementMatches.forEach(member => {
+                    const card = document.createElement('div');
+                    card.className = 'team-card card';
+                    card.style.animationDelay = `${Math.random() * 0.3}s`;
+                    card.innerHTML = `
+                        <div class="team-avatar">${member.avatar}</div>
+                        <h3 class="team-name">${member.name}</h3>
+                        <p class="team-role">${member.role}</p>
+                        <p style="color:var(--text-light); font-size:14px; margin-top:10px;">${member.desc}</p>
+                    `;
+                    gridDiv.appendChild(card);
+                });
+                
+                managementSection.appendChild(gridDiv);
+                container.appendChild(managementSection);
+            }
+            
+            // 渲染部门 - 使用 departments-grid 实现每行4个
+            const departmentEntries = Object.entries(staffData.departments);
+            
+            // 收集要显示的部门
+            let departmentsToShow = [];
+            for (const [deptName, members] of departmentEntries) {
+                if (currentFilter !== "all" && currentFilter !== deptName) continue;
+                
+                let filteredMembers = members;
+                if (currentSearch !== "") {
+                    filteredMembers = members.filter(m => m.toLowerCase().includes(currentSearch.toLowerCase()));
+                }
+                if (filteredMembers.length > 0) {
+                    departmentsToShow.push({ deptName, members: filteredMembers });
+                }
+            }
+            
+            // 创建一个包装容器用于部门网格
+            if (departmentsToShow.length > 0) {
+                const departmentsWrapper = document.createElement('div');
+                departmentsWrapper.className = 'department-wrapper';
+                
+                // 添加标题
+                const title = document.createElement('h2');
+                title.className = 'department-title';
+                title.innerHTML = '<i class="fas fa-building" style="margin-right:10px;"></i> 职能部门';
+                departmentsWrapper.appendChild(title);
+                
+                // 创建网格容器 - 使用 departments-grid 类，CSS会强制每行4个
+                const gridDiv = document.createElement('div');
+                gridDiv.className = 'departments-grid';
+                
+                // 为每个部门创建卡片
+                departmentsToShow.forEach(({ deptName, members }) => {
+                    const deptCard = document.createElement('div');
+                    deptCard.className = 'dept-card';
+                    deptCard.style.animationDelay = `${Math.random() * 0.3}s`;
+                    
+                    const memberCount = members.length;
+                    let membersHtml = '';
+                    members.forEach(m => {
+                        membersHtml += `<span>${m}</span>`;
+                    });
+                    
+                    deptCard.innerHTML = `
+                        <div class="dept-avatar">${getDepartmentIcon(deptName)}</div>
+                        <h3 class="dept-name">${deptName}</h3>
+                        <div class="dept-count">${memberCount} 位成员</div>
+                        <div class="dept-members">
+                            ${membersHtml}
+                        </div>
+                    `;
+                    gridDiv.appendChild(deptCard);
+                });
+                
+                departmentsWrapper.appendChild(gridDiv);
+                container.appendChild(departmentsWrapper);
+            }
+            
+            // 如果没有结果显示空状态
+            if (container.children.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <h3>没有找到相关成员</h3>
+                        <p>试试其他关键词或筛选条件吧~</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 搜索和筛选功能
+        function initFilters() {
+            const searchInput = document.getElementById('searchInput');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.trim();
+                renderTeam();
+            });
+            
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.department;
+                    renderTeam();
+                });
+            });
+        }
+        
+        // 滚动效果
+        function initScrollEffects() {
+            const header = document.querySelector('.header');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+        }
+        
+        // 移动端菜单
+        function initMobileMenu() {
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const mainNav = document.getElementById('mainNav');
+            if (mobileBtn) {
+                mobileBtn.addEventListener('click', () => {
+                    mainNav.classList.toggle('active');
+                });
+            }
+        }
+        
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            renderTeam();
+            initFilters();
+            initScrollEffects();
+            initMobileMenu();
+        });
+    </script>
+</body>
+</html>

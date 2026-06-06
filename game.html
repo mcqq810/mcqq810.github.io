@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海豹公司游戏排行榜</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        h1 {
+            color: #1a237e;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .logo {
+            color: #3949ab;
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .grid-item {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+        
+        .grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .level-header {
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #3949ab, #1a237e);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 2;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .level-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .level-number {
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        
+        .champion-image {
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
+            height: 320px;
+        }
+        
+        .player-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .grid-item:hover .player-avatar {
+            transform: scale(1.05);
+        }
+        
+        .champion-info {
+            padding: 12px 15px;
+            background-color: rgba(255, 255, 255, 0.95);
+            z-index: 2;
+            position: relative;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            min-height: 80px;
+        }
+        
+        .champion-name {
+            font-weight: bold;
+            color: #1a237e;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .champion-name-text {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .champion-name i {
+            color: #ffd700;
+        }
+        
+        .champion-time {
+            color: #666;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .champion-time i {
+            color: #3949ab;
+            margin-right: 5px;
+        }
+        
+        .time-text {
+            font-weight: 600;
+            color: #1a237e;
+        }
+        
+        .medal-icon {
+            font-size: 1.1rem;
+            color: #ffd700;
+        }
+        
+        footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            font-size: 0.85rem;
+            margin-top: 20px;
+        }
+        
+        .last-updated {
+            margin-top: 5px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+        }
+        
+        /* 图片加载动画 */
+        .player-avatar.loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        @media (max-width: 900px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .grid-item {
+                height: 380px;
+            }
+            
+            .champion-image {
+                height: 300px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                max-width: 100%;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .grid-item {
+                height: 360px;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            
+            .champion-image {
+                height: 280px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            header {
+                padding: 12px;
+            }
+            
+            .grid-item {
+                height: 340px;
+            }
+            
+            .champion-image {
+                height: 260px;
+            }
+            
+            .level-header {
+                padding: 8px 12px;
+            }
+            
+            .champion-info {
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <i class="fas fa-trophy logo"></i>
+                海豹公司游戏排行榜
+            </h1>
+            <p class="subtitle">添加微信号haibao223266可申请上传记录</p>
+        </header>
+        
+        <main>
+            <div class="grid-container" id="gridContainer">
+                <!-- 排行榜将通过JavaScript动态生成 -->
+            </div>
+        </main>
+        
+        <footer>
+            <p>海豹公司游戏部 © 2023 | 排行榜每小时自动更新</p>
+            <p class="last-updated">最后更新：<span id="lastUpdated">--:--:--</span></p>
+        </footer>
+    </div>
+
+    <script>
+        // 排行榜数据（每关只有一个冠军）
+    const leaderboardData = {
+            1: { name: "张海豹", time: "00:20.6", avatar: "https://img.cdn1.vip/i/697b3c1faeb6a_1769683999.webp" },
+            2: { name: "张海豹", time: "00:38.4", avatar: "https://img.cdn1.vip/i/697b3c3ba024e_1769684027.webp" },
+            3: { name: "张海豹", time: "00:17.3", avatar: "https://img.cdn1.vip/i/697b3c3bad4af_1769684027.webp" },
+            4: { name: "无", time: "00:00.00", avatar: "" },
+            5: { name: "无", time: "00:00.00", avatar: "" },
+            6: { name: "无", time: "00:00.00", avatar: "" },
+            7: { name: "无", time: "00:00.00", avatar: "" },
+            8: { name: "无", time: "00:00.00", avatar: "" },
+            9: { name: "张海豹", time: "00:30.50", avatar: "https://img.cdn1.vip/i/697b3c3fd279a_1769684031.webp" }
+        };
+
+        // 生成方格布局
+        function generateGridItems() {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+            
+            for (let level = 1; level <= 9; level++) {
+                const champion = leaderboardData[level];
+                
+                const gridItem = document.createElement('div');
+                gridItem.className = 'grid-item';
+                
+                gridItem.innerHTML = `
+                    <div class="level-header">
+                        <div class="level-title">
+                            <div class="level-number">${level}</div>
+                            <span>第 ${level} 关</span>
+                        </div>
+                        <div class="medal-icon">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="champion-image">
+                        <img src="${champion.avatar}" alt="${champion.name}" class="player-avatar loading">
+                    </div>
+                    
+                    <div class="champion-info">
+                        <div class="champion-name">
+                            <div class="champion-name-text">
+                                <i class="fas fa-user"></i>
+                                ${champion.name}
+                            </div>
+                            <div class="champion-level">冠军</div>
+                        </div>
+                        <div class="champion-time">
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                通关时间：
+                            </div>
+                            <div class="time-text">${champion.time}</div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(gridItem);
+            }
+            
+            // 添加图片加载完成事件
+            document.querySelectorAll('.player-avatar').forEach(img => {
+                img.addEventListener('load', function() {
+                    this.classList.remove('loading');
+                });
+                
+                // 如果图片加载失败，使用备用图片
+                img.addEventListener('error', function() {
+                    const championName = this.alt;
+                    this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(championName)}&background=3949ab&color=fff&size=700`;
+                    this.classList.remove('loading');
+                });
+            });
+        }
+        
+        // 更新最后更新时间
+        function updateLastUpdated() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            const timeStr = now.toLocaleTimeString('zh-CN', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            document.getElementById('lastUpdated').textContent = `${dateStr} ${timeStr}`;
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            generateGridItems();
+            updateLastUpdated();
+            
+            // 模拟实时更新：每分钟更新一次时间
+            setInterval(updateLastUpdated, 60000);
+        });
+    </script>
+</body>
+</html>

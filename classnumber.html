@@ -1,0 +1,1221 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级分数管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .menu {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9f5ff;
+            border-radius: 6px;
+        }
+        
+        .menu h2 {
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        
+        .menu ul {
+            list-style: none;
+            margin-left: 20px;
+        }
+        
+        .menu li {
+            margin: 8px 0;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .message {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #d4edda;
+            color: #155724;
+            display: none;
+        }
+        
+        .low-score {
+            color: red;
+            font-weight: bold;
+        }
+        
+        /* 登录相关样式 */
+        .login-container {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .auth-controls {
+            display: none;
+            text-align: right;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .login-btn {
+            background-color: #28a745;
+        }
+        
+        .login-btn:hover {
+            background-color: #218838;
+        }
+        
+        .logout-btn {
+            background-color: #dc3545;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .disabled-btn {
+            background-color: #6c757d !important;
+            cursor: not-allowed;
+        }
+        
+        .disabled-btn:hover {
+            background-color: #5a6268 !important;
+        }
+        
+        .info-text {
+            color: #6c757d;
+            font-style: italic;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+        
+        /* 修改分数按钮组样式 */
+        .change-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .btn-add {
+            background-color: #28a745;
+        }
+        
+        .btn-add:hover {
+            background-color: #218838;
+        }
+        
+        .btn-minus {
+            background-color: #dc3545;
+        }
+        
+        .btn-minus:hover {
+            background-color: #c82333;
+        }
+        
+        .change-record {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .positive {
+            color: #28a745;
+        }
+        
+        .negative {
+            color: #dc3545;
+        }
+        
+        .batch-controls {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .batch-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .batch-input input {
+            width: 100px;
+        }
+        
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .original-score {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .temp-change {
+            font-weight: bold;
+        }
+        
+        /* 新增：同步相关样式 - 超简洁版 */
+        .sync-container {
+            display: none;
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+        }
+        
+        .sync-controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 5px 0;
+        }
+        
+        .btn-sync {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            font-size: 14px;
+            color: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-sync:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .sync-help-btn {
+            background-color: rgba(108, 117, 125, 0.7);
+            width: 36px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sync-title {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .modal-wide {
+            max-width: 500px !important;
+        }
+        
+        .sync-instruction {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        
+        .sync-instruction ol {
+            margin-left: 20px;
+        }
+        
+        .sync-instruction li {
+            margin: 8px 0;
+        }
+        
+        /* 分享链接弹窗样式 */
+        .share-link-textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            font-family: monospace;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            resize: none;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        
+        .share-instruction {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .data-info {
+            background-color: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-controls" id="authControls">
+            <span style="margin-right: 15px;">已登录为管理员</span>
+            <button class="logout-btn" onclick="logout()">登出</button>
+        </div>
+        
+        <h1>班级分数管理系统</h1>
+        
+        <div class="login-container" id="loginContainer">
+            <h2>管理员登录</h2>
+            <div class="input-group">
+                <label for="password">请输入管理员密码：</label>
+                <input type="password" id="password" placeholder="输入密码">
+            </div>
+            <button class="login-btn" onclick="login()">登录</button>
+            <p class="info-text">未登录时只能查看分数，登录后才能修改和保存数据</p>
+        </div>
+        
+        <!-- 新增：同步面板 - 超简洁版 -->
+        <div class="sync-container" id="syncContainer" style="display: none;">
+            <div class="sync-title">🔗 跨设备同步</div>
+            <div class="sync-controls">
+                <button class="btn-sync" onclick="generateShareLink()">
+                    <span style="font-size: 16px;">📤</span> 分享数据
+                </button>
+                <button class="btn-sync sync-help-btn" onclick="showSyncHelp()" title="使用帮助">
+                    ❓
+                </button>
+            </div>
+        </div>
+        
+        <div class="menu">
+            <h2>操作指令</h2>
+            <ul>
+                <li>1: 显示分数名单</li>
+                <li>2: 增减分数（需登录）</li>
+                <li>3: 设置某成员分数（需登录）</li>
+                <li>4: 重置分数为100（需登录）</li>
+                <li>5: 显示分数过低成员</li>
+                <li>6: 保存数据（需登录）</li>
+                <li>7: 跨设备同步（需登录）</li>
+            </ul>
+        </div>
+        
+        <div class="btn-group">
+            <button onclick="showScoreList()">1. 显示分数名单</button>
+            <button id="btnAddScore" onclick="openChangeScoreModal()">2. 增减分数</button>
+            <button id="btnSetScore" onclick="openSetScoreModal()">3. 设置分数</button>
+            <button id="btnReset" onclick="resetAllScores()">4. 重置分数</button>
+            <button onclick="showLowScores()">5. 查看低分成员</button>
+            <button id="btnSave" onclick="saveData()">6. 保存数据</button>
+            <button id="btnSync" onclick="showSyncPanel()">7. 跨设备同步</button>
+        </div>
+        
+        <div id="message" class="message"></div>
+        <div id="content"></div>
+    </div>
+
+    <!-- 增减分数弹窗 -->
+    <div id="changeScoreModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeChangeScoreModal()">&times;</span>
+            <h2>批量增减分数</h2>
+            
+            <div class="batch-controls">
+                <div class="batch-input">
+                    <label>批量增减：</label>
+                    <input type="number" id="batchChangeValue" placeholder="分数值" value="5">
+                    <button class="btn-small btn-add" onclick="applyBatchChange('add')">批量增加</button>
+                    <button class="btn-small btn-minus" onclick="applyBatchChange('minus')">批量减少</button>
+                </div>
+                <div>
+                    <button onclick="clearAllChanges()">清空所有更改</button>
+                    <button onclick="applyAllChanges()" style="background-color: #28a745;">应用所有更改</button>
+                </div>
+            </div>
+            
+            <div id="changeScoreContent">
+                <!-- 动态生成表格 -->
+            </div>
+            
+            <div class="modal-actions">
+                <button onclick="closeChangeScoreModal()">取消</button>
+                <button onclick="saveChanges()" style="background-color: #007bff;">保存到系统</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置分数弹窗 -->
+    <div id="setScoreModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('setScoreModal')">&times;</span>
+            <h2>设置成员分数</h2>
+            <div class="input-group">
+                <label for="setStudentNo">成员座号(1-46)：</label>
+                <input type="number" id="setStudentNo" min="1" max="46">
+            </div>
+            <div class="input-group">
+                <label for="setScoreValue">设置分数值：</label>
+                <input type="number" id="setScoreValue">
+            </div>
+            <button onclick="setScore()">确认设置</button>
+        </div>
+    </div>
+
+    <!-- 新增：同步帮助弹窗 -->
+    <div id="syncHelpModal" class="modal">
+        <div class="modal-content modal-wide">
+            <span class="close" onclick="closeModal('syncHelpModal')">&times;</span>
+            <h2>📚 同步使用指南</h2>
+            
+            <div class="sync-instruction">
+                <h3>使用方法：</h3>
+                <ol>
+                    <li><strong>在电脑A上：</strong>点击"分享数据"按钮</li>
+                    <li><strong>复制生成的链接</strong>，通过微信/QQ/邮件发送到电脑B</li>
+                    <li><strong>在电脑B上：</strong>用浏览器打开该链接</li>
+                    <li>系统会自动检测到数据并询问是否导入</li>
+                    <li>点击"确定"即可完成同步</li>
+                </ol>
+            </div>
+            
+            <div class="sync-instruction">
+                <h4>💡 提示：</h4>
+                <ul>
+                    <li>链接包含所有分数数据，请勿泄露</li>
+                    <li>链接24小时内有效</li>
+                    <li>可以在不同电脑、手机间同步</li>
+                    <li>建议修改分数后立即分享</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="closeModal('syncHelpModal')" style="padding: 10px 30px;">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 系统配置 ====================
+        // 默认密码为 "admin123"
+        const DEFAULT_PASSWORD = "135seventeen";
+        
+        // 学生姓名数据
+        const studentNames = [
+            "", // 占位，使索引从1开始
+            "郑翊文", "李青佩", "倪友晖", "陶泓源", "杨海杰",
+            "赵羽禾", "林芷兮", "陈泽西", "潘家乐", "徐晨玥",
+            "邵向南", "林米诺", "余静萱", "吕嘉程", "杨青川",
+            "林敬恒", "吴懿航", "徐子杰", "郭以翔", "蓝昕妍",
+            "马梓恒", "吴映缇", "翁婧心", "李  论", "杨锦宏",
+            "陈玥汐", "胡轩赫", "林子琪", "林稻欣", "林子谦",
+            "张桐滔", "刘梓睿", "江成仪", "林名正", "蒋雨墨",
+            "江林鑫", "张正轩", "林楚璇", "王与璠", "王紫轩",
+            "黄浩然", "白思睿", "郭佳睿", "高语婕", "林芮涵",
+            "廖宇菲"
+        ];
+
+        // 分数数组，初始化所有分数为100
+        let scores = new Array(47).fill(100); // 索引0不用，1-46对应学生
+        
+        // 临时更改记录，用于增减分数界面
+        let tempChanges = {};
+        
+        // 登录状态
+        let isLoggedIn = false;
+        
+        // 页面加载时从本地存储读取数据并检查URL参数
+        window.onload = function() {
+            loadFromLocalStorage();
+            checkLoginStatus();
+            checkUrlForData(); // 检查URL中是否有分享的数据
+            showMessage("系统已加载，当前共有46名学生数据");
+        };
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const savedLogin = localStorage.getItem("classSystemLoggedIn");
+            const savedPassword = localStorage.getItem("classSystemPassword");
+            
+            // 如果有保存的登录状态且密码存在
+            if (savedLogin === "true" && savedPassword) {
+                isLoggedIn = true;
+                updateUIForLogin();
+            } else {
+                isLoggedIn = false;
+                updateUIForLogout();
+            }
+        }
+
+        // 更新UI为登录状态
+        function updateUIForLogin() {
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("authControls").style.display = "block";
+            document.getElementById("syncContainer").style.display = "block";
+            
+            // 启用所有按钮
+            document.getElementById("btnAddScore").classList.remove("disabled-btn");
+            document.getElementById("btnSetScore").classList.remove("disabled-btn");
+            document.getElementById("btnReset").classList.remove("disabled-btn");
+            document.getElementById("btnSave").classList.remove("disabled-btn");
+            document.getElementById("btnSync").classList.remove("disabled-btn");
+        }
+
+        // 更新UI为登出状态
+        function updateUIForLogout() {
+            document.getElementById("loginContainer").style.display = "block";
+            document.getElementById("authControls").style.display = "none";
+            document.getElementById("syncContainer").style.display = "none";
+            
+            // 清空密码输入框
+            document.getElementById("password").value = "";
+            
+            // 禁用需要登录的按钮
+            document.getElementById("btnAddScore").classList.add("disabled-btn");
+            document.getElementById("btnSetScore").classList.add("disabled-btn");
+            document.getElementById("btnReset").classList.add("disabled-btn");
+            document.getElementById("btnSave").classList.add("disabled-btn");
+            document.getElementById("btnSync").classList.add("disabled-btn");
+            
+            tempChanges = {};
+        }
+
+        // 登录函数
+        function login() {
+            const passwordInput = document.getElementById("password").value;
+            const savedPassword = localStorage.getItem("classSystemPassword") || DEFAULT_PASSWORD;
+            
+            if (passwordInput === savedPassword) {
+                isLoggedIn = true;
+                localStorage.setItem("classSystemLoggedIn", "true");
+                updateUIForLogin();
+                showMessage("登录成功！您现在可以修改和保存分数数据");
+            } else {
+                showMessage("密码错误！请重试", "error");
+                document.getElementById("password").value = "";
+            }
+        }
+
+        // 登出函数
+        function logout() {
+            isLoggedIn = false;
+            localStorage.removeItem("classSystemLoggedIn");
+            updateUIForLogout();
+            
+            // 清空临时更改
+            tempChanges = {};
+            
+            showMessage("已成功登出");
+        }
+
+        // 从本地存储加载数据
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem("classScores");
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    // 验证数据有效性
+                    if (Array.isArray(parsedData) && parsedData.length === 47) {
+                        scores = parsedData;
+                        showMessage("成功从本地加载分数数据");
+                        return true;
+                    }
+                } catch (e) {
+                    showMessage("加载数据出错，使用默认分数100", "error");
+                }
+            }
+            // 如果加载失败，使用默认值
+            scores = new Array(47).fill(100);
+            showMessage("未找到保存的数据，所有分数已设为100");
+            return false;
+        }
+
+        // 保存数据到本地存储
+        function saveData() {
+            if (!isLoggedIn) {
+                showMessage("请先登录才能保存数据", "error");
+                return false;
+            }
+            
+            try {
+                localStorage.setItem("classScores", JSON.stringify(scores));
+                showMessage("成功保存46个学生的分数数据到本地存储");
+                return true;
+            } catch (e) {
+                showMessage("保存失败：" + e.message, "error");
+                const confirmQuit = confirm("保存失败，是否确认？");
+                if (!confirmQuit) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // ==================== 分享链接同步功能 ====================
+        
+        // 生成分享链接
+        function generateShareLink() {
+            if (!isLoggedIn) {
+                showMessage("请先登录才能分享数据", "error");
+                return;
+            }
+            
+            // 准备要分享的数据
+            const shareData = {
+                scores: scores.slice(1),
+                timestamp: new Date().toISOString(),
+                version: "1.0",
+                studentCount: 46,
+                // 添加校验码防止数据篡改
+                checksum: scores.slice(1).reduce((sum, score) => sum + score, 0)
+            };
+            
+            // 将数据编码为Base64
+            const encodedData = btoa(JSON.stringify(shareData));
+            
+            // 生成分享链接（使用URL片段，不会刷新页面）
+            const currentUrl = window.location.origin + window.location.pathname;
+            const shareUrl = `${currentUrl}#data=${encodedData}`;
+            
+            // 创建并显示分享弹窗
+            const shareModal = document.createElement('div');
+            shareModal.innerHTML = `
+                <div class="modal" style="display: flex;" id="shareLinkModal">
+                    <div class="modal-content" style="max-width: 500px;">
+                        <span class="close" onclick="closeShareLinkModal()">&times;</span>
+                        <h2>📤 生成分享链接</h2>
+                        
+                        <div class="data-info">
+                            <p><strong>包含数据：</strong>46名学生分数</p>
+                            <p><strong>生成时间：</strong>${new Date().toLocaleString()}</p>
+                        </div>
+                        
+                        <div class="share-instruction">
+                            <p><strong>使用方法：</strong></p>
+                            <ol style="margin-left: 20px;">
+                                <li>复制下面的链接</li>
+                                <li>发送到另一台设备（微信/QQ/邮件）</li>
+                                <li>在另一台设备上用浏览器打开</li>
+                                <li>系统会自动导入数据</li>
+                            </ol>
+                        </div>
+                        
+                        <textarea class="share-link-textarea" id="shareLinkText" readonly>${shareUrl}</textarea>
+                        
+                        <div style="text-align: center;">
+                            <button onclick="copyShareLink()" style="background-color: #28a745; padding: 10px 20px; margin-right: 10px;">
+                                📋 复制链接
+                            </button>
+                            <button onclick="testShareLink()" style="background-color: #17a2b8; padding: 10px 20px; margin-right: 10px;">
+                                🔗 测试链接
+                            </button>
+                            <button onclick="closeShareLinkModal()" style="padding: 10px 20px;">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(shareModal);
+        }
+
+        // 关闭分享链接弹窗
+        function closeShareLinkModal() {
+            const modal = document.getElementById('shareLinkModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // 复制分享链接
+        function copyShareLink() {
+            const textarea = document.getElementById('shareLinkText');
+            if (!textarea) return;
+            
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // 对于移动设备
+            
+            try {
+                document.execCommand('copy');
+                showMessage("✅ 链接已复制到剪贴板！请发送到另一台设备");
+            } catch (err) {
+                // 如果execCommand失败，尝试使用Clipboard API
+                navigator.clipboard.writeText(textarea.value).then(() => {
+                    showMessage("✅ 链接已复制到剪贴板！请发送到另一台设备");
+                }).catch(() => {
+                    showMessage("复制失败，请手动选择并复制链接", "error");
+                });
+            }
+        }
+
+        // 测试分享链接
+        function testShareLink() {
+            const textarea = document.getElementById('shareLinkText');
+            if (!textarea) return;
+            
+            const shareUrl = textarea.value;
+            
+            // 在新标签页打开链接
+            window.open(shareUrl, '_blank');
+            
+            showMessage("✅ 已在新标签页打开链接，请检查是否正常显示导入提示", "info");
+        }
+
+        // 检查URL中是否有分享的数据
+        function checkUrlForData() {
+            // 获取URL中的hash部分
+            const hash = window.location.hash;
+            
+            if (hash && hash.includes('data=')) {
+                // 从URL中提取编码的数据
+                const encodedData = hash.split('data=')[1];
+                
+                // 如果有数据，尝试解码并导入
+                setTimeout(() => {
+                    importSharedData(encodedData);
+                }, 500); // 延迟500ms，确保页面完全加载
+            }
+        }
+
+        // 导入分享的数据
+        function importSharedData(encodedData) {
+            try {
+                // 解码Base64数据
+                const decodedData = atob(encodedData);
+                const shareData = JSON.parse(decodedData);
+                
+                // 验证数据完整性
+                if (!shareData.scores || shareData.scores.length !== 46) {
+                    showMessage("数据格式错误，无法导入", "error");
+                    return;
+                }
+                
+                // 计算校验码
+                const calculatedChecksum = shareData.scores.reduce((sum, score) => sum + score, 0);
+                if (shareData.checksum && shareData.checksum !== calculatedChecksum) {
+                    showMessage("数据校验失败，可能已被篡改", "error");
+                    return;
+                }
+                
+                // 显示导入确认对话框
+                const time = new Date(shareData.timestamp).toLocaleString();
+                const confirmMessage = `发现分享的分数数据（更新时间：${time}），共${shareData.studentCount}名学生。\n\n是否要导入这些数据？`;
+                
+                if (confirm(confirmMessage)) {
+                    // 应用数据
+                    scores = new Array(47).fill(100);
+                    for (let i = 0; i < 46; i++) {
+                        scores[i + 1] = shareData.scores[i];
+                    }
+                    
+                    // 保存到本地存储
+                    localStorage.setItem("classScores", JSON.stringify(scores));
+                    
+                    // 清除URL中的参数（避免重复导入）
+                    window.location.hash = '';
+                    
+                    showMessage(`✅ 成功导入${shareData.studentCount}名学生的分数数据！`);
+                    
+                    // 如果已登录，刷新显示
+                    if (isLoggedIn) {
+                        showScoreList();
+                    } else {
+                        // 如果未登录，显示提示
+                        showMessage("数据已导入，请登录后查看", "info");
+                    }
+                } else {
+                    // 用户取消导入，清除URL参数
+                    window.location.hash = '';
+                    showMessage("已取消数据导入", "info");
+                }
+                
+            } catch (error) {
+                console.error("导入数据失败:", error);
+                showMessage("导入数据失败：数据格式错误或已损坏", "error");
+                // 清除错误的URL参数
+                window.location.hash = '';
+            }
+        }
+
+        // 显示同步面板
+        function showSyncPanel() {
+            if (!isLoggedIn) {
+                showMessage("请先登录才能使用同步功能", "error");
+                return;
+            }
+            
+            // 滚动到同步面板
+            document.getElementById("syncContainer").scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        // 显示同步帮助
+        function showSyncHelp() {
+            document.getElementById("syncHelpModal").style.display = "flex";
+        }
+
+        // ==================== 原有功能 ====================
+        
+        // 显示分数名单
+        function showScoreList() {
+            let html = "<h2>学生分数名单</h2>";
+            html += "<table>";
+            html += "<tr><th>座号</th><th>姓名</th><th>分数</th></tr>";
+            
+            for (let i = 1; i <= 46; i++) {
+                const scoreClass = scores[i] <= 80 ? "low-score" : "";
+                html += `<tr>
+                    <td>${i}</td>
+                    <td>${studentNames[i]}</td>
+                    <td class="${scoreClass}">${scores[i]}</td>
+                </tr>`;
+            }
+            
+            html += "</table>";
+            document.getElementById("content").innerHTML = html;
+        }
+
+        // 打开增减分数弹窗
+        function openChangeScoreModal() {
+            if (!isLoggedIn) {
+                showMessage("请先登录才能修改分数", "error");
+                return;
+            }
+            
+            // 清空之前的临时更改
+            tempChanges = {};
+            
+            document.getElementById("changeScoreModal").style.display = "flex";
+            renderChangeScoreTable();
+        }
+
+        // 渲染增减分数表格
+        function renderChangeScoreTable() {
+            let html = "<table>";
+            html += "<tr><th>座号</th><th>姓名</th><th>原分数</th><th>更改</th><th>操作</th><th>更改记录</th></tr>";
+            
+            for (let i = 1; i <= 46; i++) {
+                const originalScore = scores[i];
+                const change = tempChanges[i] || 0;
+                const tempScore = originalScore + change;
+                
+                html += `<tr>
+                    <td>${i}</td>
+                    <td>${studentNames[i]}</td>
+                    <td>${originalScore}</td>
+                    <td class="temp-change ${change > 0 ? 'positive' : change < 0 ? 'negative' : ''}">
+                        ${change > 0 ? '+' : ''}${change !== 0 ? change : ''}
+                    </td>
+                    <td>
+                        <div class="change-buttons">
+                            <button class="btn-small btn-add" onclick="addScore(${i})">+5</button>
+                            <button class="btn-small btn-add" onclick="addScore(${i}, 1)">+1</button>
+                            <button class="btn-small btn-minus" onclick="minusScore(${i}, 1)">-1</button>
+                            <button class="btn-small btn-minus" onclick="minusScore(${i})">-5</button>
+                            <button class="btn-small" onclick="resetChange(${i})" style="background-color: #6c757d;">重置</button>
+                        </div>
+                    </td>
+                    <td class="change-record">
+                        ${change !== 0 ? 
+                            `<span class="${change > 0 ? 'positive' : 'negative'}">
+                                ${originalScore} → ${tempScore} (${change > 0 ? '+' : ''}${change})
+                            </span>` : 
+                            '无更改'
+                        }
+                    </td>
+                </tr>`;
+            }
+            
+            html += "</table>";
+            document.getElementById("changeScoreContent").innerHTML = html;
+        }
+
+        // 增加分数
+        function addScore(studentNo, amount = 5) {
+            if (!isLoggedIn) return;
+            
+            if (!tempChanges[studentNo]) {
+                tempChanges[studentNo] = 0;
+            }
+            tempChanges[studentNo] += amount;
+            renderChangeScoreTable();
+        }
+
+        // 减少分数
+        function minusScore(studentNo, amount = 5) {
+            if (!isLoggedIn) return;
+            
+            if (!tempChanges[studentNo]) {
+                tempChanges[studentNo] = 0;
+            }
+            tempChanges[studentNo] -= amount;
+            renderChangeScoreTable();
+        }
+
+        // 重置单个更改
+        function resetChange(studentNo) {
+            if (!isLoggedIn) return;
+            
+            delete tempChanges[studentNo];
+            renderChangeScoreTable();
+        }
+
+        // 批量增减分数
+        function applyBatchChange(type) {
+            if (!isLoggedIn) return;
+            
+            const batchValue = parseInt(document.getElementById("batchChangeValue").value);
+            if (isNaN(batchValue) || batchValue <= 0) {
+                showMessage("请输入有效的正数", "error");
+                return;
+            }
+            
+            const changeAmount = type === 'add' ? batchValue : -batchValue;
+            
+            // 应用到所有学生
+            for (let i = 1; i <= 46; i++) {
+                if (!tempChanges[i]) {
+                    tempChanges[i] = 0;
+                }
+                tempChanges[i] += changeAmount;
+            }
+            
+            renderChangeScoreTable();
+            showMessage(`已批量${type === 'add' ? '增加' : '减少'}${batchValue}分`);
+        }
+
+        // 清空所有更改
+        function clearAllChanges() {
+            if (!isLoggedIn) return;
+            
+            tempChanges = {};
+            renderChangeScoreTable();
+            showMessage("已清空所有更改");
+        }
+
+        // 应用所有更改
+        function applyAllChanges() {
+            if (!isLoggedIn) return;
+            
+            for (const studentNo in tempChanges) {
+                const change = tempChanges[studentNo];
+                if (change !== 0) {
+                    scores[studentNo] += change;
+                }
+            }
+            
+            // 清空临时更改
+            tempChanges = {};
+            
+            showMessage("已应用所有更改到当前会话");
+            renderChangeScoreTable();
+        }
+
+        // 保存更改到系统
+        function saveChanges() {
+            if (!isLoggedIn) return;
+            
+            // 先应用所有更改
+            applyAllChanges();
+            
+            // 然后保存到本地存储
+            saveData();
+            
+            // 关闭弹窗
+            closeChangeScoreModal();
+            
+            showMessage("更改已保存到系统");
+        }
+
+        // 关闭增减分数弹窗
+        function closeChangeScoreModal() {
+            // 清空临时更改
+            tempChanges = {};
+            document.getElementById("changeScoreModal").style.display = "none";
+        }
+
+        // 打开设置分数弹窗
+        function openSetScoreModal() {
+            if (!isLoggedIn) {
+                showMessage("请先登录才能设置分数", "error");
+                return;
+            }
+            document.getElementById("setScoreModal").style.display = "flex";
+            // 清空输入框
+            document.getElementById("setStudentNo").value = "";
+            document.getElementById("setScoreValue").value = "";
+        }
+
+        // 关闭弹窗
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        // 设置分数
+        function setScore() {
+            if (!isLoggedIn) {
+                showMessage("请先登录才能设置分数", "error");
+                return;
+            }
+            
+            const studentNo = parseInt(document.getElementById("setStudentNo").value);
+            const scoreValue = parseInt(document.getElementById("setScoreValue").value);
+            
+            // 验证输入
+            if (isNaN(studentNo) || studentNo < 1 || studentNo > 46) {
+                showMessage("座号无效！请输入1-46之间的数字", "error");
+                return;
+            }
+            
+            if (isNaN(scoreValue)) {
+                showMessage("分数值无效！请输入有效的数字", "error");
+                return;
+            }
+            
+            // 验证分数范围
+            if (scoreValue < 0 || scoreValue > 200) {
+                const confirmSet = confirm(`分数${scoreValue}超出0-200范围，是否继续设置？`);
+                if (!confirmSet) {
+                    showMessage("已取消设置");
+                    return;
+                }
+            }
+            
+            // 执行设置
+            scores[studentNo] = scoreValue;
+            showMessage(`${studentNo}号${studentNames[studentNo]}分数已设置为: ${scoreValue}`);
+            
+            // 关闭弹窗
+            closeModal("setScoreModal");
+            // 更新显示
+            showScoreList();
+        }
+
+        // 重置所有分数为100
+        function resetAllScores() {
+            if (!isLoggedIn) {
+                showMessage("请先登录才能重置分数", "error");
+                return;
+            }
+            
+            const confirmReset = confirm("确定重置所有学生分数为100？");
+            if (confirmReset) {
+                scores = new Array(47).fill(100);
+                showMessage("已重置所有学生分数为100");
+                showScoreList();
+            } else {
+                showMessage("已取消重置操作");
+            }
+        }
+
+        // 显示分数过低（<=80）的成员
+        function showLowScores() {
+            let html = "<h2>分数低于80分成员</h2>";
+            let hasLowScore = false;
+            
+            html += "<table>";
+            html += "<tr><th>座号</th><th>姓名</th><th>分数</th></tr>";
+            
+            for (let i = 1; i <= 46; i++) {
+                if (scores[i] <= 80) {
+                    hasLowScore = true;
+                    html += `<tr>
+                        <td>${i}</td>
+                        <td>${studentNames[i]}</td>
+                        <td class="low-score">${scores[i]}（低于80分）</td>
+                    </tr>`;
+                }
+            }
+            
+            html += "</table>";
+            
+            if (!hasLowScore) {
+                html = "<h2>分数低于80分成员</h2><p>没有分数低于80分的成员</p>";
+            }
+            
+            document.getElementById("content").innerHTML = html;
+        }
+
+        // 显示提示信息
+        function showMessage(text, type = "success") {
+            const messageEl = document.getElementById("message");
+            messageEl.textContent = text;
+            messageEl.style.display = "block";
+            
+            // 设置样式
+            if (type === "error") {
+                messageEl.style.backgroundColor = "#f8d7da";
+                messageEl.style.color = "#721c24";
+            } else if (type === "info") {
+                messageEl.style.backgroundColor = "#cce5ff";
+                messageEl.style.color = "#004085";
+            } else {
+                messageEl.style.backgroundColor = "#d4edda";
+                messageEl.style.color = "#155724";
+            }
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                messageEl.style.display = "none";
+            }, 3000);
+        }
+
+        // 点击空白处关闭弹窗
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName("modal");
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = "none";
+                }
+            }
+        };
+        
+        // 按Enter键登录
+        document.getElementById("password").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>

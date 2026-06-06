@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>班级值日表 - 周一至周五轮值 | 1-4周职责动态切换</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #eef4ea;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-card {
+            max-width: 1400px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 36px;
+            box-shadow: 0 20px 40px rgba(0, 20, 0, 0.12);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .hero {
+            background: linear-gradient(115deg, #1e3b2b, #2b5a3a);
+            color: white;
+            padding: 1.6rem 2rem;
+        }
+
+        .hero h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .hero h1 small {
+            font-size: 0.85rem;
+            background: #f9e45bcc;
+            color: #1e3c2c;
+            padding: 5px 14px;
+            border-radius: 60px;
+            font-weight: 500;
+        }
+
+        .hero p {
+            margin-top: 12px;
+            opacity: 0.85;
+            font-size: 0.9rem;
+        }
+
+        .controls {
+            background: #fef9e6;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e0e9d8;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .week-tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .week-btn {
+            background: #edf4e8;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #2c4b36;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .week-btn.active {
+            background: #2b5a3a;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .info-badge {
+            background: #e0edd9;
+            padding: 6px 20px;
+            border-radius: 32px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1c482f;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 0 0 0.5rem 0;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 800px;
+        }
+
+        .schedule-table th {
+            background: #f1f7ec;
+            color: #1f3b2c;
+            font-weight: 600;
+            padding: 14px 12px;
+            border-bottom: 2px solid #cbdcc0;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .schedule-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e2ecd9;
+            vertical-align: middle;
+        }
+
+        .day-col {
+            background-color: #fafef5;
+            font-weight: 600;
+            text-align: center;
+            width: 90px;
+        }
+
+        /* 双人同行布局：两个值日生卡片并排 */
+        .duty-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .duty-card {
+            flex: 1;
+            min-width: 200px;
+            background: #fefef7;
+            border-radius: 20px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            transition: all 0.2s;
+            border: 1px solid #e6efdf;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .student-name {
+            font-weight: 700;
+            color: #1c4d2d;
+            font-size: 1rem;
+            background: #eef3e9;
+            padding: 6px 14px;
+            border-radius: 30px;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .duty-desc {
+            font-size: 0.82rem;
+            color: #5a6e4a;
+            background: #f9fbf5;
+            padding: 6px 12px;
+            border-radius: 30px;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        /* 小屏幕适配：如果太窄则换行但保持每个卡片内同行 */
+        @media (max-width: 700px) {
+            .duty-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .duty-card {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .student-name, .duty-desc {
+                white-space: normal;
+                word-break: keep-all;
+            }
+            .hero h1 { font-size: 1.4rem; }
+            .week-btn { padding: 6px 16px; font-size: 0.85rem; }
+            .schedule-table th, .schedule-table td { padding: 12px 8px; }
+        }
+
+        .footer-note {
+            background: #f9fbf7;
+            padding: 1rem 2rem;
+            border-top: 1px solid #e2ecd9;
+            font-size: 0.8rem;
+            color: #4a6741;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-sample {
+            width: 20px;
+            height: 20px;
+            border-radius: 20px;
+            background: #e6f0df;
+            border-left: 4px solid #2b5a3a;
+        }
+
+        .stat-note {
+            background: #eef3e9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+<div class="app-card">
+    <div class="hero">
+        <h1>
+            📅 班级值日智能排班表
+            <small>周一至周五 · 每日2人轮值</small>
+        </h1>
+        <p>👥 值日生名单 (共20人) · 每天2人搭档 · 第1-2周 / 第3-4周 职责互换 · 连续循环排班</p>
+    </div>
+
+    <div class="controls">
+        <div class="week-tabs" id="weekTabs">
+            <!-- 动态生成周次按钮: 第1周 ~ 第4周 -->
+        </div>
+        <div class="info-badge" id="ruleHint">
+            📌 当前规则: 第1-2周 → 第一人(1、2组+讲台) | 第二人(3、4组+走廊)
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="schedule-table" id="dutyTable">
+            <thead>
+                <tr><th>星期</th><th>值日生及负责区域（两人一行并排）</th></tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- 动态渲染 周一~周五，一天内两个名字和工作放在同一行内（并排显示） -->
+            </tbody>
+        </table>
+    </div>
+    <div class="footer-note">
+        <div class="legend">
+            <span><i class="color-sample" style="background:#d9e8cf;"></i> 🧹 职责说明</span>
+            <span>🔹 <strong>区域A</strong> : 第1、2组 + 讲台</span>
+            <span>🔹 <strong>区域B</strong> : 第3、4组 + 走廊</span>
+        </div>
+        <div class="stat-note">
+            📊 每周5天×2人=10人次/周，4周共40人次，20人名单循环轮值，每人平均值日2次
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 班级名单 (严格按照用户提供的顺序，共20人) ----------
+    const STUDENTS = [
+        "杨锦宏", "倪友晖", "王紫轩", "赵羽禾", "杨海杰",
+        "林敬恒", "林楚璇", "陈玥汐", "张桐滔", "李论",
+        "李青佩", "林米诺", "陶泓源", "林名正", "王与璠",
+        "翁婧心", "蓝昕妍", "吴映缇", "江成仪", "余静萱"
+    ];
+    const TOTAL_STUDENTS = STUDENTS.length;  // 20
+
+    // 一周需要排班的日子: 周一到周五 (完整5天)
+    const WEEKDAYS = ["星期一", "星期二", "星期三", "星期四", "星期五"];
+    
+    // ----- 核心排班生成函数 -----
+    // 参数 weekNumber: 1~4
+    // 返回数组: [{ dayName, studentA, studentB, roleA_desc, roleB_desc }]
+    function generateDutySchedule(weekNumber) {
+        // 是否职责互换 (第3周和第4周互换)
+        const isSwapped = (weekNumber === 3 || weekNumber === 4);
+        
+        // 每周5天，每天2人 → 每周消耗 10 人次
+        const dailyPersonCount = 2;
+        const daysPerWeek = WEEKDAYS.length; // 5天
+        const personsPerWeek = daysPerWeek * dailyPersonCount; // 10人次/周
+        
+        // 当前周的起始全局偏移 (基于0索引)
+        const startOffset = (weekNumber - 1) * personsPerWeek;
+        
+        const schedule = [];
+        
+        for (let dayIdx = 0; dayIdx < daysPerWeek; dayIdx++) {
+            // 当天第一个同学在全局列表中的索引
+            const firstPersonGlobalIdx = startOffset + (dayIdx * dailyPersonCount);
+            const secondPersonGlobalIdx = firstPersonGlobalIdx + 1;
+            
+            // 取模循环名单
+            const studentA = STUDENTS[firstPersonGlobalIdx % TOTAL_STUDENTS];
+            const studentB = STUDENTS[secondPersonGlobalIdx % TOTAL_STUDENTS];
+            
+            let roleADesc, roleBDesc;
+            if (!isSwapped) {
+                roleADesc = "🧹 第1、2组 + 讲台";
+                roleBDesc = "🧽 第3、4组 + 走廊";
+            } else {
+                roleADesc = "🧽 第3、4组 + 走廊";
+                roleBDesc = "🧹 第1、2组 + 讲台";
+            }
+            
+            schedule.push({
+                dayName: WEEKDAYS[dayIdx],
+                studentA: studentA,
+                studentB: studentB,
+                roleA: roleADesc,
+                roleB: roleBDesc,
+                swapped: isSwapped,
+                week: weekNumber
+            });
+        }
+        return schedule;
+    }
+    
+    // 渲染当前周次表格 (一天内的两个名字和工作放在一行里，并排显示)
+    let currentWeek = 1;
+    
+    function renderCurrentWeek() {
+        const scheduleData = generateDutySchedule(currentWeek);
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        scheduleData.forEach(day => {
+            const tr = document.createElement('tr');
+            
+            // 星期列
+            const tdDay = document.createElement('td');
+            tdDay.className = 'day-col';
+            tdDay.textContent = day.dayName;
+            tr.appendChild(tdDay);
+            
+            // 值日生信息列：一行内并排显示两个值日生卡片，每个卡片内名字和工作在同一行
+            const tdDuty = document.createElement('td');
+            tdDuty.className = 'duty-cell';
+            
+            // 创建flex容器，两个卡片并排
+            const dutyRow = document.createElement('div');
+            dutyRow.className = 'duty-row';
+            
+            // 第一个值日生卡片
+            const card1 = document.createElement('div');
+            card1.className = 'duty-card';
+            
+            const nameSpan1 = document.createElement('span');
+            nameSpan1.className = 'student-name';
+            nameSpan1.textContent = day.studentA;
+            
+            const dutySpan1 = document.createElement('span');
+            dutySpan1.className = 'duty-desc';
+            dutySpan1.textContent = day.roleA;
+            
+            card1.appendChild(nameSpan1);
+            card1.appendChild(dutySpan1);
+            
+            // 第二个值日生卡片
+            const card2 = document.createElement('div');
+            card2.className = 'duty-card';
+            
+            const nameSpan2 = document.createElement('span');
+            nameSpan2.className = 'student-name';
+            nameSpan2.textContent = day.studentB;
+            
+            const dutySpan2 = document.createElement('span');
+            dutySpan2.className = 'duty-desc';
+            dutySpan2.textContent = day.roleB;
+            
+            card2.appendChild(nameSpan2);
+            card2.appendChild(dutySpan2);
+            
+            dutyRow.appendChild(card1);
+            dutyRow.appendChild(card2);
+            tdDuty.appendChild(dutyRow);
+            tr.appendChild(tdDuty);
+            
+            tbody.appendChild(tr);
+        });
+        
+        // 更新规则提示栏
+        const ruleHint = document.getElementById('ruleHint');
+        if (currentWeek === 1 || currentWeek === 2) {
+            ruleHint.innerHTML = `📌 当前规则: 第${currentWeek}周 → 第一人负责「第1、2组+讲台」 | 第二人负责「第3、4组+走廊」`;
+        } else {
+            ruleHint.innerHTML = `🔄 当前规则: 第${currentWeek}周 (职责互换模式) → 第一人负责「第3、4组+走廊」 | 第二人负责「第1、2组+讲台」`;
+        }
+        
+        // 更新周次按钮active样式
+        document.querySelectorAll('.week-btn').forEach(btn => {
+            const weekVal = parseInt(btn.getAttribute('data-week'), 10);
+            if (weekVal === currentWeek) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+    
+    // 简单防XSS
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+    
+    // 生成周次按钮 (1~4周)
+    function initWeekButtons() {
+        const container = document.getElementById('weekTabs');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let w = 1; w <= 4; w++) {
+            const btn = document.createElement('button');
+            btn.className = 'week-btn';
+            if (w === currentWeek) btn.classList.add('active');
+            btn.textContent = `第 ${w} 周`;
+            btn.setAttribute('data-week', w);
+            btn.addEventListener('click', (function(weekNum) {
+                return function() {
+                    currentWeek = weekNum;
+                    renderCurrentWeek();
+                };
+            })(w));
+            container.appendChild(btn);
+        }
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        initWeekButtons();
+        renderCurrentWeek();
+        
+        console.log("✅ 值日表已加载（周一至周五），学生总数: %d", TOTAL_STUDENTS);
+        console.log("名单顺序:", STUDENTS.join(" → "));
+        console.log("排班规则: 每天两人，每个值日生的名字和工作区域在同一行内并排显示（两个卡片并排）");
+        console.log("第1周周一: %s → %s , %s → %s", STUDENTS[0], "区域A", STUDENTS[1], "区域B");
+        console.log("第3周周一职责互换: 第一人负责走廊区域，第二人负责讲台+1、2组");
+    });
+    
+    // 完全符合要求：
+    // 1. 一周轮5天（周一至周五），每天2人，一共4周
+    // 2. 第1周和第2周: 第一人做1、2组+讲台，第二人做3、4组+走廊
+    // 3. 第3周和第4周: 职责相反
+    // 4. 名单顺序严格按照最新提供
+    // 5. 一天内的两个值日生在一行内并排显示，每个值日生卡片中名字和工作区域在同一行（并排）
+    // 6. 连续循环排班: 每周10人次，全局连续，保证公平
+    // 7. 支持点击1-4周按钮动态查看任意一周完整5天值日表
+    // 8. 响应式设计，移动端自动调整为上下排列保持可读性
+</script>
+</body>
+</html>

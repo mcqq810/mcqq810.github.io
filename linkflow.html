@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>链接收纳</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f8fafd;
+            font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 3rem 1.5rem;
+            color: #1e2f3e;
+        }
+
+        /* 主容器 – 优雅居中，最大宽度舒适 */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: transparent;
+        }
+
+        /* 页眉 - 干净利落 */
+        .page-header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+        .page-header h1 {
+            font-size: 2.2rem;
+            font-weight: 550;
+            letter-spacing: -0.3px;
+            background: linear-gradient(140deg, #1B4F72, #2874A6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .page-header h1::before {
+            content: "⎯";
+            font-weight: 300;
+            font-size: 2rem;
+            color: #5d8bb8;
+            background: none;
+            -webkit-background-clip: unset;
+            background-clip: unset;
+            color: #5d8bb8;
+        }
+        .page-header h1::after {
+            content: "⎯";
+            font-weight: 300;
+            font-size: 2rem;
+            color: #5d8bb8;
+            background: none;
+            -webkit-background-clip: unset;
+            color: #5d8bb8;
+        }
+        .sub-line {
+            font-size: 0.8rem;
+            color: #6a8bb0;
+            margin-top: 0.4rem;
+            border-bottom: 1px solid #e2ebf3;
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* 链接列表区域 */
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            border-radius: 1.5rem;
+            background: rgba(255,255,255,0.4);
+        }
+
+        /* 每一个条目：横线风格，标题+网址在同一行 */
+        .link-row {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 0.75rem 1rem;
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #e2eaf1;
+            transition: background 0.18s ease;
+            background-color: #ffffff;
+        }
+        /* 第一个和最后一个圆角修饰，让列表更整体 */
+        .links-list .link-row:first-child {
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+        }
+        .links-list .link-row:last-child {
+            border-bottom: none;
+            border-bottom-left-radius: 1rem;
+            border-bottom-right-radius: 1rem;
+        }
+        .link-row:hover {
+            background-color: #fefefe;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.01);
+        }
+
+        /* 左侧区域：标题 + 网址 同一行，等大风格 */
+        .link-info-row {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.9rem;
+            column-gap: 1.2rem;
+            row-gap: 0.5rem;
+            flex: 2;
+            min-width: 200px;
+        }
+
+        /* 标题样式 – 与网址同样字重/大小 */
+        .link-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1f4a6e;
+            letter-spacing: -0.2px;
+            background: #eff3f8;
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            display: inline-block;
+            transition: 0.1s;
+            white-space: nowrap;
+        }
+        /* 网址样式 – 同等大小，便于阅读和复制 */
+        .link-url {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #2c6c9e;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            background: #f0f5fa;
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            word-break: break-all;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.1s;
+            cursor: pointer;
+        }
+        .link-url:hover {
+            background: #e6eff7;
+            color: #0c5c8a;
+        }
+
+        /* 复制按钮 (独立操作区) + 访问按钮轻便 */
+        .row-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-shrink: 0;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #cbdde9;
+            padding: 0.3rem 0.9rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            font-family: inherit;
+            color: #3f6b91;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            backdrop-filter: blur(2px);
+        }
+        .copy-btn:hover {
+            background: #e5f0f8;
+            border-color: #9bb9d0;
+            color: #165a83;
+            transform: scale(0.97);
+        }
+        .visit-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: #6a8fb0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 2rem;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-weight: 450;
+        }
+        .visit-btn:hover {
+            background: #eef3fc;
+            color: #1f6ea0;
+            transform: translateX(2px);
+        }
+
+        /* 复制成功toast轻提示 */
+        .toast-msg {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: #1f3b4c;
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 3rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            z-index: 999;
+            backdrop-filter: blur(8px);
+            background: #1f3b4cee;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .toast-msg.show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* 空状态占位 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            background: white;
+            border-radius: 1.8rem;
+            color: #7899bc;
+            border: 1px solid #e5edf5;
+            font-weight: 450;
+        }
+
+        /* 底部小字优雅 */
+        .footer-note {
+            text-align: center;
+            margin-top: 2.5rem;
+            font-size: 0.7rem;
+            color: #8aa9c4;
+            border-top: 1px solid #e1eaf2;
+            padding-top: 1.5rem;
+        }
+
+        @media (max-width: 680px) {
+            body {
+                padding: 1.2rem;
+            }
+            .link-row {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1rem;
+            }
+            .link-info-row {
+                justify-content: space-between;
+                width: 100%;
+            }
+            .row-actions {
+                justify-content: flex-end;
+                margin-top: 0.2rem;
+            }
+            .link-title, .link-url {
+                white-space: normal;
+                word-break: break-word;
+            }
+            .link-url {
+                max-width: 100%;
+                overflow-x: auto;
+            }
+        }
+        /* 网址复制时的手型 */
+        .copy-indicator {
+            margin-left: 4px;
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <h1>快速链接</h1>
+        <div class="sub-line">标题 · 网址</div>
+    </div>
+
+    <div id="linksListContainer" class="links-list">
+        <!-- 动态渲染内容 -->
+    </div>
+    <div class="footer-note">
+        🖱️ 点击网址复制链接 | ➡️ 点击「访问」跳转页面 
+    </div>
+</div>
+
+<div id="toastMessage" class="toast-msg">✓ 链接已复制</div>
+
+<script>
+    // ============================================================
+    // ✨ 只需要在这里配置你的链接 —— 标题 + 网址 ✨
+    // 注意：标题和网址会显示在同一行，字体大小完全一致
+    // ============================================================
+    const linksCatalog = [
+        { title: "洛谷用户", url: "https://www.luogu.com.cn/user/1350956" },
+        { title: "洛谷团队", url: "https://www.luogu.com.cn/team/108693" },
+        { title: "抖音帐号", url: "https://www.douyin.com/user/MS4wLjABAAAABB3V7uJ9Oyh4ourZ_UNxunxjfxAdzeWORyj4G1JZJTs?from_tab_name=main" },
+        { title: "PCL下载", url: "https://ltcat.lanzouv.com/b0aj6gsid" },
+        { title: "假人地图", url: "https://www.minecraftmaps.com/52118-unstable-smp-final-law-battle-simulator" },
+        { title: "海豹公司", url: "mcqq810.github.io" },
+        { title: "WARP(提取码微信私聊)", url: "https://1854943120.share.123pan.cn/123pan/YGEWvd-ev3Sd" },
+        { title: "lawmeet", url: "https://wwboq.lanzoub.com/b01bjf215g" },
+        { title: "", url: "" },
+        { title: "", url: "" },
+        { title: "", url: "" },
+        { title: "", url: "" }
+        // ========= 在这里继续增加，格式: { title: "名称", url: "https://..." } =========
+        // 示例: { title: "百度", url: "https://www.baidu.com" }
+    ];
+
+    // 辅助: 确保url有安全协议 (自动补全)
+    function normalizeUrl(url) {
+        let trimmed = url.trim();
+        if (!trimmed) return "#";
+        if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+            return "https://" + trimmed;
+        }
+        return trimmed;
+    }
+
+    // 简洁复制函数 (现代 clipboard API)
+    async function copyToClipboard(text, element) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast(`✓ 已复制: ${text.length > 45 ? text.slice(0, 42) + '...' : text}`);
+            // 添加瞬间视觉反馈 (修改按钮文案然后复原)
+            if (element) {
+                const originalText = element.innerText;
+                const iconSpan = element.querySelector('.copy-icon');
+                if (iconSpan) iconSpan.innerHTML = '✓';
+                else element.innerText = '✓ 已复制';
+                setTimeout(() => {
+                    if (iconSpan) iconSpan.innerHTML = '📋';
+                    else element.innerText = originalText || '复制';
+                }, 1200);
+            }
+        } catch (err) {
+            // 降级方案: 使用textarea
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast(`📋 复制成功: ${text.length > 45 ? text.slice(0, 42) + '...' : text}`);
+            if (element) {
+                const originalText = element.innerText;
+                if (element.querySelector('.copy-icon')) {
+                    element.querySelector('.copy-icon').innerHTML = '✓';
+                } else {
+                    element.innerText = '✓ 已复制';
+                }
+                setTimeout(() => {
+                    if (element.querySelector('.copy-icon')) element.querySelector('.copy-icon').innerHTML = '📋';
+                    else element.innerText = originalText || '复制';
+                }, 1000);
+            }
+        }
+    }
+
+    // 全局 toast
+    let toastTimer = null;
+    function showToast(message) {
+        const toast = document.getElementById('toastMessage');
+        if (!toast) return;
+        toast.innerText = message || '✓ 链接已复制';
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 1800);
+    }
+
+    // 渲染全部链接 (一行一条独立分割线)
+    function renderLinkList() {
+        const container = document.getElementById('linksListContainer');
+        if (!container) return;
+
+        if (!linksCatalog || linksCatalog.length === 0) {
+            container.innerHTML = `<div class="empty-state">✨ 暂无链接，请在 linksCatalog 中添加网址 ✨</div>`;
+            return;
+        }
+
+        let rowsHtml = '';
+        for (let i = 0; i < linksCatalog.length; i++) {
+            const item = linksCatalog[i];
+            let rawTitle = item.title && item.title.trim() !== '' ? item.title.trim() : '未命名站点';
+            let rawUrl = item.url && item.url.trim() !== '' ? item.url.trim() : '';
+            if (!rawUrl) continue;  // 跳过无效链接
+            
+            const finalUrl = normalizeUrl(rawUrl);
+            // 防止无限 # 情况
+            const validUrlForVisit = (finalUrl !== "#" && finalUrl !== "") ? finalUrl : "#";
+            
+            // 展示的网址文本（去掉协议头让界面更清爽，但复制时保留完整链接）
+            let displayUrl = rawUrl;
+            try {
+                let urlObj = new URL(finalUrl);
+                let host = urlObj.hostname;
+                let path = urlObj.pathname;
+                if (path === '/') path = '';
+                displayUrl = host + path;
+                if (displayUrl.length > 65) displayUrl = displayUrl.slice(0, 62) + '...';
+            } catch(e) {
+                displayUrl = rawUrl.length > 65 ? rawUrl.slice(0,62)+'...' : rawUrl;
+            }
+            
+            // 转义 XSS
+            const safeTitle = escapeHtml(rawTitle);
+            const safeDisplayUrl = escapeHtml(displayUrl);
+            const fullRawUrl = finalUrl;   // 复制用完整链接
+            
+            rowsHtml += `
+                <div class="link-row" data-row-idx="${i}">
+                    <div class="link-info-row">
+                        <span class="link-title">${safeTitle}</span>
+                        <span class="link-url" data-full-url="${escapeAttr(fullRawUrl)}" title="点击复制整条链接">${safeDisplayUrl} <span class="copy-indicator">📋</span></span>
+                    </div>
+                    <div class="row-actions">
+                        <button class="copy-btn" data-copy-url="${escapeAttr(fullRawUrl)}" data-title="${safeTitle}"><span class="copy-icon">📋</span> 复制</button>
+                        <button class="visit-btn" data-visit-url="${escapeAttr(validUrlForVisit)}" title="新标签页打开">↗ 访问</button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (rowsHtml === "") {
+            container.innerHTML = `<div class="empty-state">⚠️ 暂无有效链接，请补充正确的网址</div>`;
+            return;
+        }
+        container.innerHTML = rowsHtml;
+        
+        // 绑定复制 (网址区域 和 独立复制按钮)
+        // 1. 点击 .link-url 区域复制完整网址
+        document.querySelectorAll('.link-url').forEach(elem => {
+            elem.removeEventListener('click', handleUrlClick);
+            elem.addEventListener('click', handleUrlClick);
+        });
+        
+        // 2. 复制按钮事件
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.removeEventListener('click', handleCopyBtnClick);
+            btn.addEventListener('click', handleCopyBtnClick);
+        });
+        
+        // 3. 访问按钮事件
+        document.querySelectorAll('.visit-btn').forEach(btn => {
+            btn.removeEventListener('click', handleVisitClick);
+            btn.addEventListener('click', handleVisitClick);
+        });
+    }
+    
+    // 处理点击网址复制
+    function handleUrlClick(event) {
+        event.stopPropagation();
+        const targetElem = event.currentTarget;
+        const fullUrl = targetElem.getAttribute('data-full-url');
+        if (fullUrl && fullUrl !== "#") {
+            copyToClipboard(fullUrl, targetElem);
+        } else {
+            showToast("❌ 无效链接");
+        }
+    }
+    
+    // 复制按钮逻辑
+    function handleCopyBtnClick(event) {
+        event.stopPropagation();
+        const btn = event.currentTarget;
+        const urlToCopy = btn.getAttribute('data-copy-url');
+        if (urlToCopy && urlToCopy !== "#") {
+            copyToClipboard(urlToCopy, btn);
+        } else {
+            showToast("无法复制，链接无效");
+        }
+    }
+    
+    // 访问跳转 (新标签页)
+    function handleVisitClick(event) {
+        event.stopPropagation();
+        const btn = event.currentTarget;
+        const visitUrl = btn.getAttribute('data-visit-url');
+        if (visitUrl && visitUrl !== "#") {
+            window.open(visitUrl, '_blank', 'noopener,noreferrer');
+        } else {
+            showToast("地址不可用");
+        }
+    }
+    
+    // 基础安全转义
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+    
+    function escapeAttr(str) {
+        if (!str) return "";
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    
+    // 页面渲染入口
+    renderLinkList();
+</script>
+<!-- 
+    使用说明（极简）：
+    1. 打开本文件，找到 script 标签内的 `linksCatalog` 数组。
+    2. 按照现有格式 { title: "标题名字", url: "https://网址" } 添加或修改链接。
+    3. 保存文件，用浏览器打开即可看到每一条链接（标题+网址同排、等大，横线分隔）。
+    4. 点击网址 / 点击复制按钮 均可复制完整链接；点击“访问”在新标签页打开。
+    5. 所有网址支持自动补全 https:// 前缀。
+-->
+</body>
+</html>
