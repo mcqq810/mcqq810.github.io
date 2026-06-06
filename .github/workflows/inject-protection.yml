@@ -14,25 +14,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Inject protection into HTML files
+      - name: Inject protection
         run: |
-          CODE='<script>document.addEventListener("contextmenu",function(e){e.preventDefault()});document.addEventListener("keydown",function(e){if(e.key==="F12"||e.keyCode===123||(e.ctrlKey&&(e.key==="u"||e.keyCode===85))||(e.ctrlKey&&e.shiftKey&&(e.key==="I"||e.keyCode===73))||(e.ctrlKey&&e.shiftKey&&(e.key==="J"||e.keyCode===74))||(e.ctrlKey&&(e.key==="s"||e.keyCode===83))){e.preventDefault()}});document.addEventListener("selectstart",function(e){if(e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA")e.preventDefault()});document.addEventListener("dragstart",function(e){e.preventDefault()});document.addEventListener("copy",function(e){if(e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA")e.preventDefault()});</script><style>body{-webkit-user-select:none;user-select:none}</style>'
-          
+          cat << 'EOF' > /tmp/protection.txt
+          <script>
+          document.addEventListener("contextmenu",function(e){e.preventDefault()});
+          document.addEventListener("keydown",function(e){
+            if(e.key==="F12"||e.keyCode===123||(e.ctrlKey&&(e.key==="u"||e.keyCode===85))||(e.ctrlKey&&e.shiftKey&&(e.key==="I"||e.keyCode===73))||(e.ctrlKey&&e.shiftKey&&(e.key==="J"||e.keyCode===74))||(e.ctrlKey&&(e.key==="s"||e.keyCode===83))){e.preventDefault()}
+          });
+          document.addEventListener("selectstart",function(e){
+            if(e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA")e.preventDefault()
+          });
+          document.addEventListener("dragstart",function(e){e.preventDefault()});
+          document.addEventListener("copy",function(e){
+            if(e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA")e.preventDefault()
+          });
+          </script>
+          <style>body{-webkit-user-select:none;user-select:none}</style>
+          EOF
+
+          PROTECTION_CODE=$(cat /tmp/protection.txt)
+
           for f in $(find . -name "*.html"); do
             if ! grep -q "data-protection-injected" "$f"; then
-              sed -i "s|<head>|<head>\n    ${CODE}\n    <!-- data-protection-injected -->|" "$f"
+              awk -v code="$PROTECTION_CODE" '/<head>/ {print; print code; print "<!-- data-protection-injected -->"; next} {print}' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
               echo "✓ 已注入: $f"
+            else
+              echo "跳过: $f"
             fi
           done
 
-      - name: Commit and push changes
+      - name: Push
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
           git add .
-          if git diff --cached --quiet; then
-            echo "没有文件被修改"
-          else
-            git commit -m "注入防护代码 [skip ci]"
-            git push
-          fi
+          git diff --cached --quiet || git commit -m "add protection [skip ci]"
+          git push
