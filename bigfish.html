@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head><meta content="default-src 'none'; style-src * 'unsafe-inline'; script-src * 'unsafe-inline'; img-src * data: blob:; font-src * data:; media-src * data: blob:; connect-src 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'" http-equiv="Content-Security-Policy"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>大鱼吃小鱼 - HTML5 Canvas Game</title>
+<style>
+        /* CSS Reset and Basic Layout */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #001e36; /* Deep ocean blue */
+            color: #ffffff;
+        }
+
+        /* Game Canvas */
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI Overlay Container */
+        #uiLayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Let clicks pass through to canvas when playing */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* HUD (Heads Up Display) */
+        .hud {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+
+        .hud-left, .hud-right {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .hud-center {
+            text-align: center;
+        }
+
+        /* Screens (Start, Game Over, Victory, Level Up) */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 30, 54, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto; /* Enable clicks on buttons */
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px #0288d1;
+        }
+
+        h2 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #ffeb3b;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 10px;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .info-text {
+            color: #b0bec5;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(to bottom, #4fc3f7, #0288d1);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 40px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, box-shadow 0.1s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Level Notification */
+        #levelNotification {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #4fc3f7;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Stats Highlight */
+        .highlight {
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="uiLayer">
+
+<div class="hud" id="hud" style="display: none;">
+<div class="hud-left">
+<span id="scoreDisplay">分数: 0</span>
+<span id="targetDisplay">目标: 1000</span>
+</div>
+<div class="hud-center">
+<span id="levelDisplay" style="font-size: 24px; font-weight: bold; color: #4fc3f7;">第 1 关</span>
+<span id="timerDisplay">时间: 60s</span>
+</div>
+<div class="hud-right">
+<span id="bestTimeDisplay">最佳: --s</span>
+</div>
+</div>
+
+<div class="screen" id="startScreen">
+<h1>大鱼吃小鱼</h1>
+<p>控制你的鱼在海洋中生存。<br/>
+               吃掉比你小的鱼（绿色）来得分并长大。<br/>
+               躲避比你大的鱼（红色），否则会被吃掉！<br/>
+               在60秒内获得目标分数即可进入下一关。</p>
+<p class="info-text">控制方式: 鼠标移动 / 触摸拖动 / 键盘 ↑↓←→</p>
+<button class="btn" id="startBtn">开始游戏</button>
+</div>
+
+<div class="screen hidden" id="gameOverScreen">
+<h2 id="gameOverTitle">游戏结束</h2>
+<p id="gameOverReason">你被大鱼吃掉了！</p>
+<p>最终得分: <span class="highlight" id="finalScore">0</span></p>
+<button class="btn" id="retryBtn">再试一次</button>
+</div>
+
+<div class="screen hidden" id="victoryScreen">
+<h1>胜利！</h1>
+<p>恭喜你！你成为了海洋霸主。</p>
+<p>总耗时: <span class="highlight" id="totalTime">0</span> 秒</p>
+<button class="btn" id="replayBtn">再玩一次</button>
+</div>
+
+<div class="screen hidden" id="levelScreen" style="background: transparent; pointer-events: none;">
+<div id="levelNotification">
+<h2 id="levelTitle">第 2 关</h2>
+<p>目标分数: <span id="levelTarget">1500</span></p>
+</div>
+</div>
+</div>
+<script>
+        /**
+         * Game Configuration and Constants
+         */
+        const CONFIG = {
+            levelScores: [1000, 1500, 2000, 3000, 5000, 6000, 8000, 10000, 15000, 20000],
+            levelDuration: 60, // seconds
+            playerBaseSpeed: 4,
+            playerBaseRadius: 15,
+            spawnRate: 40, // frames between spawns
+            colors: {
+                player: '#ff9800', // Orange
+                safe: '#4caf50',   // Green
+                danger: '#f44336', // Red
+                bg: '#001e36'
+            }
+        };
+
+        /**
+         * Game State Management
+         */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // UI Elements
+        const ui = {
+            start: document.getElementById('startScreen'),
+            gameOver: document.getElementById('gameOverScreen'),
+            victory: document.getElementById('victoryScreen'),
+            level: document.getElementById('levelScreen'),
+            hud: document.getElementById('hud'),
+            score: document.getElementById('scoreDisplay'),
+            target: document.getElementById('targetDisplay'),
+            levelTxt: document.getElementById('levelDisplay'),
+            timer: document.getElementById('timerDisplay'),
+            bestTime: document.getElementById('bestTimeDisplay'),
+            gameOverTitle: document.getElementById('gameOverTitle'),
+            gameOverReason: document.getElementById('gameOverReason'),
+            finalScore: document.getElementById('finalScore'),
+            totalTime: document.getElementById('totalTime'),
+            levelTitle: document.getElementById('levelTitle'),
+            levelTarget: document.getElementById('levelTarget'),
+            btns: {
+                start: document.getElementById('startBtn'),
+                retry: document.getElementById('retryBtn'),
+                replay: document.getElementById('replayBtn')
+            }
+        };
+
+        let gameState = 'MENU'; // MENU, PLAYING, LEVEL_TRANSITION, GAME_OVER, VICTORY
+        let animationId;
+        let lastTime = 0;
+        let frameCount = 0;
+
+        // Game Data
+        let gameData = {
+            level: 1,
+            score: 0,
+            timeLeft: CONFIG.levelDuration,
+            startTime: 0, // Level start timestamp
+            totalTimeAccumulated: 0, // For victory screen
+            bestTimes: {} // Loaded from localStorage
+        };
+
+        // Entities
+        let player = {
+            x: 0,
+            y: 0,
+            radius: CONFIG.playerBaseRadius,
+            initialRadius: CONFIG.playerBaseRadius,
+            speed: CONFIG.playerBaseSpeed,
+            vx: 0,
+            vy: 0,
+            angle: 0
+        };
+
+        let enemies = [];
+        let particles = []; // For simple effects
+
+        // Input State
+        const input = {
+            keys: {},
+            mouseX: 0,
+            mouseY: 0,
+            usingMouse: false
+        };
+
+        /**
+         * Initialization and Event Listeners
+         */
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Keyboard Events
+        window.addEventListener('keydown', (e) => {
+            input.keys[e.key] = true;
+            input.usingMouse = false;
+        });
+        window.addEventListener('keyup', (e) => {
+            input.keys[e.key] = false;
+        });
+
+        // Mouse/Touch Events
+        window.addEventListener('mousemove', (e) => {
+            input.mouseX = e.clientX;
+            input.mouseY = e.clientY;
+            input.usingMouse = true;
+        });
+        
+        window.addEventListener('touchstart', (e) => {
+            input.mouseX = e.touches[0].clientX;
+            input.mouseY = e.touches[0].clientY;
+            input.usingMouse = true;
+        }, {passive: false});
+
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent scrolling
+            input.mouseX = e.touches[0].clientX;
+            input.mouseY = e.touches[0].clientY;
+            input.usingMouse = true;
+        }, {passive: false});
+
+        // Button Listeners
+        ui.btns.start.addEventListener('click', startGame);
+        ui.btns.retry.addEventListener('click', startGame);
+        ui.btns.replay.addEventListener('click', startGame);
+
+        /**
+         * Core Game Logic
+         */
+        function startGame() {
+            // Reset Game Data
+            gameData.level = 1;
+            gameData.score = 0;
+            gameData.totalTimeAccumulated = 0;
+            gameData.bestTimes = loadBestTimes();
+            
+            // Reset Player
+            player.radius = CONFIG.playerBaseRadius;
+            player.initialRadius = CONFIG.playerBaseRadius;
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            player.vx = 0;
+            player.vy = 0;
+
+            enemies = [];
+            particles = [];
+
+            // UI Reset
+            hideAllScreens();
+            ui.hud.style.display = 'flex';
+            
+            startLevel(1);
+        }
+
+        function startLevel(levelNum) {
+            gameData.level = levelNum;
+            gameData.timeLeft = CONFIG.levelDuration;
+            gameData.startTime = Date.now();
+            
+            // Reset player position slightly to avoid instant collision if unlucky
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            
+            // Clear enemies for a fresh start or keep them? 
+            // Usually clearing is safer for level transitions.
+            enemies = []; 
+
+            updateHUD();
+            
+            // Show Level Notification
+            showLevelNotification(levelNum, () => {
+                gameState = 'PLAYING';
+                lastTime = Date.now();
+                loop();
+            });
+        }
+
+        function showLevelNotification(level, callback) {
+            gameState = 'LEVEL_TRANSITION';
+            ui.levelTitle.innerText = `第 ${level} 关`;
+            ui.levelTarget.innerText = CONFIG.levelScores[level - 1];
+            ui.level.classList.remove('hidden');
+            
+            setTimeout(() => {
+                ui.level.classList.add('hidden');
+                if (callback) callback();
+            }, 2000);
+        }
+
+        function endGame(reason) {
+            gameState = 'GAME_OVER';
+            ui.gameOverTitle.innerText = "游戏结束";
+            ui.gameOverReason.innerText = reason;
+            ui.finalScore.innerText = gameData.score;
+            
+            ui.hud.style.display = 'none';
+            ui.gameOver.classList.remove('hidden');
+        }
+
+        function victory() {
+            gameState = 'VICTORY';
+            ui.totalTime.innerText = (gameData.totalTimeAccumulated + (CONFIG.levelDuration - gameData.timeLeft)).toFixed(1);
+            
+            ui.hud.style.display = 'none';
+            ui.victory.classList.remove('hidden');
+        }
+
+        /**
+         * Game Loop
+         */
+        function loop() {
+            if (gameState !== 'PLAYING') return;
+
+            const now = Date.now();
+            const dt = (now - lastTime) / 1000;
+            lastTime = now;
+
+            update(dt);
+            draw();
+
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function update(dt) {
+            // 1. Update Timer
+            const elapsed = (Date.now() - gameData.startTime) / 1000;
+            gameData.timeLeft = Math.max(0, CONFIG.levelDuration - elapsed);
+            
+            if (gameData.timeLeft <= 0) {
+                endGame("时间耗尽！");
+                return;
+            }
+
+            // 2. Player Movement
+            updatePlayer(dt);
+
+            // 3. Spawn Enemies
+            frameCount++;
+            if (frameCount % CONFIG.spawnRate === 0) {
+                spawnEnemy();
+            }
+
+            // 4. Update Enemies
+            updateEnemies(dt);
+
+            // 5. Collision Detection
+            checkCollisions();
+
+            // 6. Update Particles
+            updateParticles(dt);
+
+            // 7. Check Level Progress
+            const targetScore = CONFIG.levelScores[gameData.level - 1];
+            if (gameData.score >= targetScore) {
+                levelComplete();
+            }
+
+            // 8. Update HUD
+            updateHUD();
+        }
+
+        function updatePlayer(dt) {
+            // Calculate speed based on size (larger = slower)
+            // Formula: base * (0.6 + 0.4 * initial / current)
+            const currentSpeed = player.speed * (0.6 + 0.4 * player.initialRadius / player.radius);
+
+            if (input.usingMouse) {
+                // Move towards mouse
+                const dx = input.mouseX - player.x;
+                const dy = input.mouseY - player.y;
+                const dist = Math.hypot(dx, dy);
+                
+                if (dist > 5) {
+                    const angle = Math.atan2(dy, dx);
+                    player.angle = angle;
+                    player.x += Math.cos(angle) * currentSpeed;
+                    player.y += Math.sin(angle) * currentSpeed;
+                }
+            } else {
+                // Keyboard control
+                let dx = 0;
+                let dy = 0;
+                if (input.keys['ArrowUp'] || input.keys['w']) dy = -1;
+                if (input.keys['ArrowDown'] || input.keys['s']) dy = 1;
+                if (input.keys['ArrowLeft'] || input.keys['a']) dx = -1;
+                if (input.keys['ArrowRight'] || input.keys['d']) dx = 1;
+
+                if (dx !== 0 || dy !== 0) {
+                    const angle = Math.atan2(dy, dx);
+                    player.angle = angle;
+                    player.x += Math.cos(angle) * currentSpeed;
+                    player.y += Math.sin(angle) * currentSpeed;
+                }
+            }
+
+            // Boundary Check
+            const r = player.radius;
+            player.x = Math.max(r, Math.min(canvas.width - r, player.x));
+            player.y = Math.max(r, Math.min(canvas.height - r, player.y));
+        }
+
+        function spawnEnemy() {
+            const isSafe = Math.random() < 0.6; // 60% chance for smaller fish
+            let radius;
+            
+            // Determine size relative to player
+            if (isSafe) {
+                // Smaller: 50% to 90% of player size
+                radius = player.radius * (0.5 + Math.random() * 0.4);
+            } else {
+                // Larger: 110% to 200% of player size
+                radius = player.radius * (1.1 + Math.random() * 0.9);
+            }
+            
+            // Cap min/max radius for gameplay balance
+            radius = Math.max(5, Math.min(150, radius));
+
+            // Spawn at edge
+            let x, y, vx, vy;
+            const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+            const speed = (2 + Math.random() * 2) * (20 / radius); // Larger = slower
+
+            if (side === 0) { // Top
+                x = Math.random() * canvas.width;
+                y = -radius;
+                vx = (Math.random() - 0.5) * speed;
+                vy = Math.random() * speed;
+            } else if (side === 1) { // Right
+                x = canvas.width + radius;
+                y = Math.random() * canvas.height;
+                vx = -Math.random() * speed;
+                vy = (Math.random() - 0.5) * speed;
+            } else if (side === 2) { // Bottom
+                x = Math.random() * canvas.width;
+                y = canvas.height + radius;
+                vx = (Math.random() - 0.5) * speed;
+                vy = -Math.random() * speed;
+            } else { // Left
+                x = -radius;
+                y = Math.random() * canvas.height;
+                vx = Math.random() * speed;
+                vy = (Math.random() - 0.5) * speed;
+            }
+
+            enemies.push({
+                x, y, radius,
+                vx, vy,
+                color: radius < player.radius ? CONFIG.colors.safe : CONFIG.colors.danger,
+                angle: Math.atan2(vy, vx)
+            });
+        }
+
+        function updateEnemies(dt) {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+                e.x += e.vx;
+                e.y += e.vy;
+                e.angle = Math.atan2(e.vy, e.vx);
+
+                // Remove if far off screen
+                if (e.x < -200 || e.x > canvas.width + 200 || e.y < -200 || e.y > canvas.height + 200) {
+                    enemies.splice(i, 1);
+                }
+            }
+        }
+
+        function checkCollisions() {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+                const dx = player.x - e.x;
+                const dy = player.y - e.y;
+                const dist = Math.hypot(dx, dy);
+
+                // Simple circle collision
+                // Use a slightly smaller hit box (0.8) to be forgiving
+                if (dist < (player.radius + e.radius) * 0.8) {
+                    if (player.radius >= e.radius) {
+                        // Eat enemy
+                        const points = Math.floor(e.radius * 10);
+                        gameData.score += points;
+                        
+                        // Grow player
+                        const growth = Math.max(0.5, e.radius * 0.1);
+                        player.radius += growth;
+
+                        // Create particles
+                        createParticles(e.x, e.y, e.color);
+
+                        // Remove enemy
+                        enemies.splice(i, 1);
+                    } else {
+                        // Die
+                        endGame("你被大鱼吃掉了！");
+                        return;
+                    }
+                }
+            }
+        }
+
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 5; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
+                    life: 1.0,
+                    color
+                });
+            }
+        }
+
+        function updateParticles(dt) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= dt * 2;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function levelComplete() {
+            // Save Time
+            const timeTaken = CONFIG.levelDuration - gameData.timeLeft;
+            const levelKey = `fish_game_level_${gameData.level}`;
+            const currentBest = gameData.bestTimes[levelKey];
+            
+            if (!currentBest || timeTaken < currentBest) {
+                gameData.bestTimes[levelKey] = parseFloat(timeTaken.toFixed(1));
+                localStorage.setItem(levelKey, gameData.bestTimes[levelKey]);
+            }
+
+            gameData.totalTimeAccumulated += timeTaken;
+
+            if (gameData.level >= 10) {
+                victory();
+            } else {
+                startLevel(gameData.level + 1);
+            }
+        }
+
+        /**
+         * Rendering
+         */
+        function draw() {
+            // Clear Canvas
+            ctx.fillStyle = CONFIG.colors.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Particles
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+
+            // Draw Enemies
+            enemies.forEach(e => {
+                drawFish(e.x, e.y, e.radius, e.angle, e.color);
+            });
+
+            // Draw Player
+            drawFish(player.x, player.y, player.radius, player.angle, CONFIG.colors.player, true);
+        }
+
+        function drawFish(x, y, radius, angle, color, isPlayer = false) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            // Rotate fish to face movement direction
+            // If moving left (angle > 90 or < -90), flip vertically to keep "belly" down? 
+            // Actually standard rotation is fine for this simple style.
+            ctx.rotate(angle);
+
+            // Body
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            // Ellipse for body
+            ctx.ellipse(0, 0, radius, radius * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.8, 0);
+            ctx.lineTo(-radius * 1.5, -radius * 0.6);
+            ctx.lineTo(-radius * 1.5, radius * 0.6);
+            ctx.closePath();
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(radius * 0.4, -radius * 0.2, radius * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(radius * 0.5, -radius * 0.2, radius * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Fin (Side)
+            ctx.fillStyle = color;
+            ctx.filter = 'brightness(80%)'; // Slightly darker fin
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(-radius * 0.2, radius * 0.5, radius * 0.2, 0);
+            ctx.fill();
+            ctx.filter = 'none';
+
+            ctx.restore();
+        }
+
+        /**
+         * UI Helpers
+         */
+        function updateHUD() {
+            ui.score.innerText = `分数: ${gameData.score}`;
+            ui.target.innerText = `目标: ${CONFIG.levelScores[gameData.level - 1]}`;
+            ui.levelTxt.innerText = `第 ${gameData.level} 关`;
+            ui.timer.innerText = `时间: ${Math.ceil(gameData.timeLeft)}s`;
+            
+            const levelKey = `fish_game_level_${gameData.level}`;
+            const best = gameData.bestTimes[levelKey];
+            ui.bestTime.innerText = best ? `最佳: ${best}s` : `最佳: --s`;
+        }
+
+        function hideAllScreens() {
+            ui.start.classList.add('hidden');
+            ui.gameOver.classList.add('hidden');
+            ui.victory.classList.add('hidden');
+            ui.level.classList.add('hidden');
+        }
+
+        function loadBestTimes() {
+            const times = {};
+            for (let i = 1; i <= 10; i++) {
+                const key = `fish_game_level_${i}`;
+                const val = localStorage.getItem(key);
+                if (val) times[key] = parseFloat(val);
+            }
+            return times;
+        }
+
+    </script>
+</body>
+</html>
